@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, renderers
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,8 +8,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.utils.decorators import method_decorator
-from .models import Location, PriceInfo, Comment
-from .serializers import LocationSerializer, PriceInfoSerializer, CommentSerializer, UserSerializer
+from .models import Location, PriceInfo, Comment, UserProfile
+from .serializers import LocationSerializer, PriceInfoSerializer, CommentSerializer, UserSerializer, UserProfileSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+import json
+import requests
 
 # Create your views here.
 
@@ -46,7 +49,61 @@ class LocationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        # Try to get address from coordinates if not provided
+        data = self.request.data
+        address = data.get('address')
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        
+        if not address and latitude and longitude:
+            # Try to get address from coordinates using OpenStreetMap Nominatim API
+            address = self.get_address_from_coordinates(latitude, longitude)
+        
+        serializer.save(created_by=self.request.user, address=address)
+    
+    def get_address_from_coordinates(self, latitude, longitude):
+        """
+        Uses OpenStreetMap's Nominatim API to get an address from coordinates
+        """
+        try:
+            url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={latitude}&lon={longitude}&zoom=18&addressdetails=1"
+            headers = {
+                'User-Agent': 'PriceMapApp/1.0'  # Nominatim requires a user agent
+            }
+            response = requests.get(url, headers=headers)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if 'display_name' in result:
+                    return result['display_name']
+            return None
+        except Exception as e:
+            print(f"Error getting address from coordinates: {str(e)}")
+            return None
+    
+    @action(detail=False, methods=['post'])
+    def get_address(self, request):
+        """
+        Endpoint to get an address from latitude and longitude
+        """
+        latitude = request.data.get('latitude')
+        longitude = request.data.get('longitude')
+        
+        if not latitude or not longitude:
+            return Response(
+                {'error': 'Latitude and longitude are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        address = self.get_address_from_coordinates(latitude, longitude)
+        
+        if address:
+            return Response({'address': address})
+        else:
+            return Response(
+                {'error': 'Could not determine address from the provided coordinates'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
         
     @action(detail=True, methods=['post'])
     def add_price(self, request, pk=None):
@@ -89,6 +146,7 @@ class UserRegistrationView(APIView):
 
     def post(self, request):
         print(f"Registration request received: {request.data}")
+        print(f"Headers: {request.headers}")
         
         try:
             username = request.data.get('username')
@@ -97,56 +155,83 @@ class UserRegistrationView(APIView):
             first_name = request.data.get('first_name', '')
             last_name = request.data.get('last_name', '')
             
-            if not username or not password:
-                return Response(
-                    {'error': 'Username and password are required'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-                
-            if User.objects.filter(username=username).exists():
-                return Response(
-                    {'error': 'Username already exists'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-                
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name
-            )
-                
-            token, created = Token.objects.get_or_create(user=user)
+            print(f"Parsed data - username: {username}, email: {email}, first_name: {first_name}, last_name: {last_name}")
             
-            return Response({
-                'token': token.key,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'is_staff': user.is_staff
-                }
-            }, status=status.HTTP_201_CREATED)
+            # Validate required fields
+            errors = {}
+            if not username:
+                errors['username'] = ['Username is required']
+            if not password:
+                errors['password'] = ['Password is required']
+            
+            # Check for existing username
+            if User.objects.filter(username=username).exists():
+                errors['username'] = ['Username already exists']
+            
+            if errors:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Create user
+            try:    
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name
+                )
+                    
+                token, created = Token.objects.get_or_create(user=user)
+                
+                # Create user profile
+                UserProfile.objects.create(user=user)
+                
+                return Response({
+                    'token': token.key,
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'is_staff': user.is_staff
+                    }
+                }, status=status.HTTP_201_CREATED)
+            except Exception as create_error:
+                print(f"Error creating user: {str(create_error)}")
+                return Response({'error': str(create_error)}, status=status.HTTP_400_BAD_REQUEST)
             
         except Exception as e:
             print(f"Registration error: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    renderer_classes = [renderers.JSONRenderer]  # Force JSON responses only
 
     def post(self, request):
         print(f"Login request received: {request.data}")
+        print(f"Login Headers: {request.headers}")
+        print(f"Content-Type: {request.content_type}")
         
         try:
-            username = request.data.get('username')
-            password = request.data.get('password')
+            # Ensure we're getting data from the request properly
+            if hasattr(request, 'data'):
+                data = request.data
+            else:
+                # Fallback for when DRF doesn't parse the data correctly
+                data = json.loads(request.body.decode('utf-8'))
+                
+            username = data.get('username')
+            password = data.get('password')
+            
+            print(f"Login attempt for username: {username}")
             
             if not username or not password:
+                print(f"Missing username or password in request")
                 return Response(
                     {'error': 'Username and password are required'}, 
                     status=status.HTTP_400_BAD_REQUEST
@@ -155,25 +240,86 @@ class UserLoginView(APIView):
             user = authenticate(username=username, password=password)
             
             if not user:
+                print(f"Authentication failed for username: {username}")
                 return Response(
                     {'error': 'Invalid credentials'}, 
                     status=status.HTTP_401_UNAUTHORIZED
                 )
             
+            print(f"Authentication successful for username: {username}")
             token, created = Token.objects.get_or_create(user=user)
+            print(f"Token for {username}: {token.key}")
             
-            return Response({
+            # Get or create profile if it doesn't exist
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            user_data = {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'is_staff': user.is_staff
+            }
+            
+            print(f"Returning user data and token to client")
+            response_data = {
                 'token': token.key,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'is_staff': user.is_staff
-                }
-            })
+                'user': user_data
+            }
+            print(f"Response data: {response_data}")
+            return Response(response_data)
             
         except Exception as e:
             print(f"Login error: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UserProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+    
+    def put(self, request):
+        user = request.user
+        
+        # Update user data
+        user_data = {
+            'first_name': request.data.get('first_name', user.first_name),
+            'last_name': request.data.get('last_name', user.last_name),
+            'email': request.data.get('email', user.email)
+        }
+        
+        user_serializer = UserSerializer(user, data=user_data, partial=True)
+        if user_serializer.is_valid():
+            user_serializer.save()
+            
+            # Get or create user profile
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            # Update profile data
+            profile_data = {
+                'bio': request.data.get('bio', profile.bio),
+                'phone': request.data.get('phone', profile.phone)
+            }
+            
+            # Handle profile image upload
+            if 'profile_image' in request.FILES:
+                profile_data['profile_image'] = request.FILES['profile_image']
+            
+            profile_serializer = UserProfileSerializer(profile, data=profile_data, partial=True)
+            if profile_serializer.is_valid():
+                profile_serializer.save()
+                
+                # Return combined user and profile data
+                return Response(UserSerializer(user).data)
+            else:
+                return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

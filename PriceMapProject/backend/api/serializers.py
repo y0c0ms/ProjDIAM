@@ -1,11 +1,18 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Location, PriceInfo, Comment
+from .models import Location, PriceInfo, Comment, UserProfile
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['profile_image', 'bio', 'phone']
 
 class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(read_only=True)
+    
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'profile']
 
 class PriceInfoSerializer(serializers.ModelSerializer):
     reported_by = UserSerializer(read_only=True)

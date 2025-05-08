@@ -6,6 +6,7 @@ from .views import (
     CommentViewSet, 
     UserRegistrationView, 
     UserLoginView, 
+    UserProfileView,
     get_csrf_token
 )
 
@@ -16,8 +17,10 @@ router.register(r'comments', CommentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('auth/', include('rest_framework.urls')),
     path('auth/register/', UserRegistrationView.as_view(), name='register'),
     path('auth/login/', UserLoginView.as_view(), name='login'),
+    path('auth/token-login/', UserLoginView.as_view(), name='token_login'),
+    path('auth/user/', UserProfileView.as_view(), name='user_profile'),
+    path('auth/profile/update/', UserProfileView.as_view(), name='update_profile'),
     path('csrf/', get_csrf_token, name='csrf'),
 ] 
