@@ -1,0 +1,1 @@
+web: cd PriceMapProject/backend && gunicorn pricemap.wsgi:application 
