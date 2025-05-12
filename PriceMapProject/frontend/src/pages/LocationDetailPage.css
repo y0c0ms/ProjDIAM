@@ -1,0 +1,160 @@
+.location-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: #4b9cd3;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+h1 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.location-address {
+  margin-bottom: 10px;
+  color: #666;
+  font-style: italic;
+}
+
+.location-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.location-coordinates {
+  margin: 0;
+  font-family: monospace;
+  color: #555;
+}
+
+.google-maps-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.google-maps-button:hover {
+  background-color: #3367D6;
+}
+
+.map-icon {
+  font-size: 18px;
+}
+
+.location-details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+}
+
+@media (min-width: 768px) {
+  .location-details {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.prices-section, .comments-section {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #444;
+  font-size: 1.5rem;
+}
+
+.price-list, .comment-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.price-item, .comment-item {
+  margin-bottom: 15px;
+  padding: 12px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.price-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.price-value {
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.price-date, .comment-date {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #444;
+}
+
+.comment-text {
+  line-height: 1.5;
+}
+
+.add-price-section, .add-comment-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+@media (max-width: 767px) {
+  .location-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+} 
