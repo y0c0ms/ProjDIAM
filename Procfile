@@ -1,1 +1,1 @@
-web: gunicorn --config=gunicorn_config.py wsgi:application 
+web: PYTHONPATH=$PYTHONPATH:$PWD:$PWD/PriceMapProject/backend gunicorn --pythonpath $PWD:$PWD/PriceMapProject/backend pricemap_wsgi:application 
