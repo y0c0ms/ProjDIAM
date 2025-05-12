@@ -12,4 +12,7 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 
 # Aplicar migrações
-python manage.py migrate 
+python manage.py migrate
+
+# Garantir que a pasta do projeto seja adicionada ao PYTHONPATH
+echo "export PYTHONPATH=$PYTHONPATH:$(pwd)" >> $HOME/.bashrc 
