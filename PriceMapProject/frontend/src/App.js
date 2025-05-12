@@ -12,7 +12,7 @@ import './App.css';
 function App() {
   return (
     <Router>
-      <div className="App">
+    <div className="App">
         <Navbar />
         <div className="container">
           <Routes>
@@ -31,7 +31,7 @@ function App() {
             } />
           </Routes>
         </div>
-      </div>
+    </div>
     </Router>
   );
 }

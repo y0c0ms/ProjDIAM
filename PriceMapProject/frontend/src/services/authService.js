@@ -5,7 +5,9 @@ axios.defaults.withCredentials = true;  // Enable cookies and credentials
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
-const API_URL = 'http://localhost:8000/api/auth/';
+// Use environment variable for API URL, fallback to localhost for development
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/auth/';
+const BASE_API_URL = API_URL.endsWith('/auth/') ? API_URL.slice(0, -5) : API_URL;
 
 // Function to get CSRF token from cookies
 const getCsrfToken = () => {
@@ -50,7 +52,7 @@ const removeToken = () => {
 // Get CSRF Token first
 const fetchCsrfToken = async () => {
   try {
-    await axios.get('http://localhost:8000/api/csrf/');
+    await axios.get(`${BASE_API_URL}/csrf/`);
     console.log('CSRF token fetched successfully');
   } catch (error) {
     console.error('Error fetching CSRF token:', error);
