@@ -14,6 +14,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
+// API URL
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
+
 // Component to handle map clicks
 function MapClickHandler({ onLocationSelect }) {
   const map = useMapEvents({
@@ -42,14 +45,55 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
     const fetchLocations = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8000/api/locations/');
+        setError(null);
+        
+        // Use axios with explicit configurations
+        const response = await axios({
+          method: 'get',
+          url: `${API_BASE_URL}/locations/`,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000, // 10 seconds timeout
+        });
+        
         console.log('Locations fetched:', response.data);
-        setLocations(response.data);
+        
+        if (Array.isArray(response.data)) {
+          setLocations(response.data);
+        } else {
+          console.error('Unexpected response format:', response.data);
+          setError('Unexpected response format from server');
+        }
+        
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch location data');
-        setLoading(false);
         console.error('Error fetching locations:', err);
+        setError(`Failed to fetch location data: ${err.message}`);
+        setLoading(false);
+        
+        // Adicionar dados de localização de teste para desenvolvimento
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Using test data for development');
+          const testLocations = [
+            {
+              id: 1,
+              name: "Café Central (Test)",
+              latitude: 38.736946,
+              longitude: -9.142685,
+              address: "Praça do Comércio, Lisboa",
+              prices: [
+                { id: 1, product_name: "Coffee", price: 1.20 },
+                { id: 2, product_name: "Pastel de Nata", price: 1.50 }
+              ],
+              comments: [
+                { id: 1, user: { username: "testuser" }, text: "Great place with friendly staff and reasonable prices!" }
+              ]
+            }
+          ];
+          setLocations(testLocations);
+        }
       }
     };
 

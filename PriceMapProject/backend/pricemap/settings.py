@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-shxf%%8!^)&%6143e$$0oh@n0tpf$7jz#%=_w)*q!flgy0ho%@')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
@@ -52,10 +52,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Deve vir antes de qualquer middleware que possa gerar respostas
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -169,15 +169,15 @@ REST_FRAMEWORK = {
 }
 
 # Configurações CORS
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,https://localhost:3000').split(',')
+CORS_ALLOW_ALL_ORIGINS = True  # Permite todas as origens em desenvolvimento
+# CORS_ALLOWED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
+# CORS_ALLOWED_ORIGIN_REGEXES = [r"^http://localhost:*$", r"^http://127.0.0.1:*$"]
 
-# Adicionar URL do frontend em produção
-FRONTEND_URL = os.environ.get('FRONTEND_URL')
-if FRONTEND_URL:
-    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
-
+# Configurações CORS adicionais para lidar com redirecionamentos em solicitações preflight
+CORS_URLS_REGEX = r'^/api/.*$'  # Aplica CORS apenas a URLs que começam com /api/
 CORS_ALLOW_CREDENTIALS = True
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 horas
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -198,33 +198,18 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# Configurações CSRF para produção
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
+# Configurações CSRF para desenvolvimento
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = None
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_DOMAIN = None
 
-# Em produção, habilite essas configurações de segurança
-if not DEBUG:
-    CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_SAMESITE = 'Lax'
-    CSRF_USE_SESSIONS = True
-    
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 31536000  # 1 ano
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-else:
-    # Configurações para desenvolvimento
-    CSRF_COOKIE_SECURE = False
-    CSRF_COOKIE_HTTPONLY = False
-    CSRF_COOKIE_SAMESITE = None
-    CSRF_USE_SESSIONS = False
-    CSRF_COOKIE_DOMAIN = None
-    
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = False
+# Configuração para permitir uso de credenciais
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = False
+
+# Desabilitar SSL redirect em desenvolvimento
+SECURE_SSL_REDIRECT = False

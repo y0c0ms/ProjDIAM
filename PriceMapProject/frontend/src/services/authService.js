@@ -1,12 +1,12 @@
 import axios from 'axios';
 
-// Configure Axios defaults
-axios.defaults.withCredentials = true;  // Enable cookies and credentials
+// Configuração global do axios (isso ajuda a prevenir problemas de CORS)
+axios.defaults.withCredentials = false;  // Alterar para false se estiver tendo problemas de CORS
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
 // Use environment variable for API URL, fallback to localhost for development
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/auth/';
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api/auth/';
 const BASE_API_URL = API_URL.endsWith('/auth/') ? API_URL.slice(0, -5) : API_URL;
 
 // Function to get CSRF token from cookies
