@@ -7,6 +7,7 @@ from .views import (
     UserRegistrationView, 
     UserLoginView, 
     UserProfileView,
+    UserViewSet,
     get_csrf_token
 )
 
@@ -14,6 +15,7 @@ router = DefaultRouter()
 router.register(r'locations', LocationViewSet)
 router.register(r'prices', PriceInfoViewSet)
 router.register(r'comments', CommentViewSet)
+router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

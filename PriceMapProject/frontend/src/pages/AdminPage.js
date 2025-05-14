@@ -1,0 +1,310 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import authService from '../services/authService';
+import './AdminPage.css';
+
+const AdminPage = () => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('users');
+  const [users, setUsers] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [prices, setPrices] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Check if user is admin
+  useEffect(() => {
+    if (!authService.isAdmin()) {
+      navigate('/');
+    }
+  }, [navigate]);
+
+  // Get auth token
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: {
+        'Authorization': `Token ${token}`,
+        'Content-Type': 'application/json'
+      }
+    };
+  };
+
+  // Fetch users
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await axios.get('http://localhost:8000/api/users/', getAuthHeader());
+      setUsers(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setError('Failed to fetch users. ' + (err.response?.data?.message || err.message));
+      setLoading(false);
+    }
+  };
+
+  // Fetch locations
+  const fetchLocations = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await axios.get('http://localhost:8000/api/locations/', getAuthHeader());
+      setLocations(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching locations:', err);
+      setError('Failed to fetch locations. ' + (err.response?.data?.message || err.message));
+      setLoading(false);
+    }
+  };
+
+  // Fetch prices
+  const fetchPrices = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await axios.get('http://localhost:8000/api/prices/', getAuthHeader());
+      setPrices(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching prices:', err);
+      setError('Failed to fetch prices. ' + (err.response?.data?.message || err.message));
+      setLoading(false);
+    }
+  };
+
+  // Load data based on active tab
+  useEffect(() => {
+    if (activeTab === 'users') {
+      fetchUsers();
+    } else if (activeTab === 'locations') {
+      fetchLocations();
+    } else if (activeTab === 'prices') {
+      fetchPrices();
+    }
+  }, [activeTab]);
+
+  // Delete user
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    
+    try {
+      setLoading(true);
+      await axios.delete(`http://localhost:8000/api/users/${userId}/`, getAuthHeader());
+      setSuccessMessage('User deleted successfully');
+      fetchUsers();
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError('Failed to delete user. ' + (err.response?.data?.message || err.message));
+      setLoading(false);
+    }
+  };
+
+  // Delete location
+  const handleDeleteLocation = async (locationId) => {
+    if (!window.confirm('Are you sure you want to delete this location?')) return;
+    
+    try {
+      setLoading(true);
+      await axios.delete(`http://localhost:8000/api/locations/${locationId}/`, getAuthHeader());
+      setSuccessMessage('Location deleted successfully');
+      fetchLocations();
+    } catch (err) {
+      console.error('Error deleting location:', err);
+      setError('Failed to delete location. ' + (err.response?.data?.message || err.message));
+      setLoading(false);
+    }
+  };
+
+  // Delete price
+  const handleDeletePrice = async (priceId) => {
+    if (!window.confirm('Are you sure you want to delete this price?')) return;
+    
+    try {
+      setLoading(true);
+      await axios.delete(`http://localhost:8000/api/prices/${priceId}/`, getAuthHeader());
+      setSuccessMessage('Price deleted successfully');
+      fetchPrices();
+    } catch (err) {
+      console.error('Error deleting price:', err);
+      setError('Failed to delete price. ' + (err.response?.data?.message || err.message));
+      setLoading(false);
+    }
+  };
+
+  // Clear messages after 5 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  return (
+    <div className="admin-page">
+      <h1>Admin Dashboard</h1>
+      
+      {successMessage && <div className="success-message">{successMessage}</div>}
+      {error && <div className="error-message">{error}</div>}
+      
+      <div className="admin-tabs">
+        <button 
+          className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          Users
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'locations' ? 'active' : ''}`}
+          onClick={() => setActiveTab('locations')}
+        >
+          Locations
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'prices' ? 'active' : ''}`}
+          onClick={() => setActiveTab('prices')}
+        >
+          Prices
+        </button>
+      </div>
+      
+      <div className="admin-content">
+        {loading ? (
+          <div className="loading">Loading...</div>
+        ) : (
+          <>
+            {activeTab === 'users' && (
+              <div className="users-tab">
+                <h2>Manage Users</h2>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Username</th>
+                      <th>Email</th>
+                      <th>Date Joined</th>
+                      <th>Admin</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map(user => (
+                      <tr key={user.id}>
+                        <td>{user.id}</td>
+                        <td>{user.username}</td>
+                        <td>{user.email}</td>
+                        <td>{new Date(user.date_joined).toLocaleDateString()}</td>
+                        <td>{user.is_staff ? 'Yes' : 'No'}</td>
+                        <td>
+                          <button 
+                            className="delete-btn"
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            
+            {activeTab === 'locations' && (
+              <div className="locations-tab">
+                <h2>Manage Locations</h2>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Address</th>
+                      <th>Created By</th>
+                      <th>Date Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {locations.map(location => (
+                      <tr key={location.id}>
+                        <td>{location.id}</td>
+                        <td>{location.name}</td>
+                        <td>{location.address}</td>
+                        <td>{location.created_by?.username || 'Unknown'}</td>
+                        <td>{new Date(location.created_at).toLocaleDateString()}</td>
+                        <td>
+                          <button 
+                            className="delete-btn"
+                            onClick={() => handleDeleteLocation(location.id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            
+            {activeTab === 'prices' && (
+              <div className="prices-tab">
+                <h2>Manage Prices</h2>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Product</th>
+                      <th>Price</th>
+                      <th>Location</th>
+                      <th>Reported By</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prices.map(price => (
+                      <tr key={price.id}>
+                        <td>{price.id}</td>
+                        <td>{price.product_name}</td>
+                        <td>€{price.price}</td>
+                        <td>{price.location?.name || 'Unknown'}</td>
+                        <td>{price.reported_by?.username || 'Unknown'}</td>
+                        <td>{new Date(price.date_reported).toLocaleDateString()}</td>
+                        <td>
+                          <button 
+                            className="delete-btn"
+                            onClick={() => handleDeletePrice(price.id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdminPage; 

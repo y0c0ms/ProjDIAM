@@ -16,6 +16,14 @@ import requests
 
 # Create your views here.
 
+# Admin permission class
+class IsAdminUser(permissions.BasePermission):
+    """
+    Custom permission to only allow admin users to access the view.
+    """
+    def has_permission(self, request, view):
+        return request.user and request.user.is_staff
+
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 @ensure_csrf_cookie
@@ -381,3 +389,37 @@ class UserProfileView(APIView):
                 return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# User management viewset for admins
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    
+    def get_queryset(self):
+        # Filter out superusers from the list to prevent accidental deletion
+        return User.objects.filter(is_superuser=False)
+    
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        # Prevent admins from deleting themselves
+        if user == request.user:
+            return Response(
+                {"error": "You cannot delete your own account"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
+    
+    @action(detail=True, methods=['post'])
+    def toggle_admin(self, request, pk=None):
+        user = self.get_object()
+        # Prevent admins from removing their own admin status
+        if user == request.user:
+            return Response(
+                {"error": "You cannot change your own admin status"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.is_staff = not user.is_staff
+        user.save()
+        return Response({"status": "success", "is_admin": user.is_staff})
