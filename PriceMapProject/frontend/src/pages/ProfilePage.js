@@ -129,24 +129,24 @@ const ProfilePage = () => {
   if (loading && !user) return <div className="loading">Loading profile...</div>;
 
   return (
-    <div className="profile-container">
-      <h1>Edit Profile</h1>
+    <div className="profile-page">
+      <h2>Edit Profile</h2>
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
 
       <div className="profile-content">
-        <div className="profile-image-section">
-          <div className="profile-image-container">
+        <div className="profile-image-section" style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <div style={{ maxWidth: '150px', maxHeight: '150px', margin: '0 auto', overflow: 'hidden', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.2)' }}>
             {previewImage ? (
-              <img src={previewImage} alt="Profile Preview" className="profile-image" />
+              <img src={previewImage} alt="Profile Preview" style={{ width: '100%', height: 'auto' }} />
             ) : (
-              <div className="profile-image-placeholder">
-                <i className="fas fa-user"></i>
+              <div style={{ width: '150px', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '60px', color: 'rgba(255,255,255,0.5)' }}>
+                <span>👤</span>
               </div>
             )}
           </div>
-          <div className="image-upload">
-            <label htmlFor="profile-image-input" className="custom-file-upload">
+          <div style={{ marginTop: '10px' }}>
+            <label htmlFor="profile-image-input" style={{ cursor: 'pointer', padding: '8px 15px', backgroundColor: 'rgba(33, 150, 243, 0.8)', color: 'white', borderRadius: '4px', display: 'inline-block' }}>
               Choose Image
             </label>
             <input
@@ -159,74 +159,72 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <div className="profile-form-section">
-          <form onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="first_name">First Name</label>
-                <input
-                  type="text"
-                  id="first_name"
-                  name="first_name"
-                  value={formData.first_name}
-                  onChange={handleChange}
-                  className="form-control"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="last_name">Last Name</label>
-                <input
-                  type="text"
-                  id="last_name"
-                  name="last_name"
-                  value={formData.last_name}
-                  onChange={handleChange}
-                  className="form-control"
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label htmlFor="first_name">First Name</label>
               <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                id="first_name"
+                name="first_name"
+                value={formData.first_name}
                 onChange={handleChange}
                 className="form-control"
               />
             </div>
-
-            <div className="form-group">
-              <label htmlFor="bio">Bio</label>
-              <textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                className="form-control"
-                rows="4"
-              ></textarea>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="phone">Phone</label>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label htmlFor="last_name">Last Name</label>
               <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
+                type="text"
+                id="last_name"
+                name="last_name"
+                value={formData.last_name}
                 onChange={handleChange}
                 className="form-control"
               />
             </div>
+          </div>
 
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? 'Updating...' : 'Update Profile'}
-            </button>
-          </form>
-        </div>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="form-control"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="bio">Bio</label>
+            <textarea
+              id="bio"
+              name="bio"
+              value={formData.bio}
+              onChange={handleChange}
+              className="form-control"
+              rows="4"
+            ></textarea>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="phone">Phone</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="form-control"
+            />
+          </div>
+
+          <button type="submit" className="submit-button" disabled={loading} style={{ width: '100%', marginTop: '10px' }}>
+            {loading ? 'Updating...' : 'Update Profile'}
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -59,7 +59,7 @@ npm start
 ```
 
 ## Equipa de Desenvolvimento
-Este projeto foi desenvolvido como parte da disciplina de Desenvolvimento de Interfaces e Aplicações Multiplataforma.
+Este projeto foi desenvolvido como parte da disciplina de DIAM.
 
 ## Licença
 [MIT License](LICENSE) 

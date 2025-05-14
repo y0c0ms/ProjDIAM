@@ -6,6 +6,20 @@ import CommentForm from '../components/CommentForm';
 import authService from '../services/authService';
 import './LocationDetailPage.css';
 
+// Component to display star ratings
+const StarDisplay = ({ rating }) => {
+  // Default to 1 if rating is not available or invalid
+  const starRating = rating && rating >= 1 && rating <= 5 ? rating : 1;
+  
+  return (
+    <div className="star-display">
+      {[...Array(5)].map((_, index) => (
+        <div key={index} className={`star ${index < starRating ? 'filled' : ''}`}></div>
+      ))}
+    </div>
+  );
+};
+
 const LocationDetailPage = () => {
   const { id } = useParams();
   const [location, setLocation] = useState(null);
@@ -122,6 +136,7 @@ const LocationDetailPage = () => {
                       {new Date(comment.created_at).toLocaleDateString()}
                     </span>
                   </div>
+                  <StarDisplay rating={comment.rating} />
                   <div className="comment-text">{comment.text}</div>
                 </li>
               ))}

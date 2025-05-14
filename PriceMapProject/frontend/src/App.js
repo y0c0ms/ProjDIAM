@@ -12,7 +12,16 @@ import './App.css';
 function App() {
   return (
     <Router>
-    <div className="App">
+      <div className="App">
+        {/* Video Background */}
+        <div className="video-background">
+          <video autoPlay loop muted playsInline className="video-bg">
+            <source src={require('./assets/videos/videoBG.mp4')} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="video-overlay"></div>
+        </div>
+        
         <Navbar />
         <div className="container">
           <Routes>
@@ -31,7 +40,7 @@ function App() {
             } />
           </Routes>
         </div>
-    </div>
+      </div>
     </Router>
   );
 }

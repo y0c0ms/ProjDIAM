@@ -26,7 +26,7 @@ class CommentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Comment
-        fields = ['id', 'text', 'created_at', 'user']
+        fields = ['id', 'text', 'rating', 'created_at', 'user']
 
 class LocationSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)

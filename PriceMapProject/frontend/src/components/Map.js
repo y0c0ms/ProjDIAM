@@ -17,6 +17,29 @@ L.Icon.Default.mergeOptions({
 // API URL
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
+// Custom dark style for Leaflet popups
+const addCustomPopupStyles = () => {
+  // Add custom popup styles
+  const style = document.createElement('style');
+  style.textContent = `
+    .leaflet-popup-content-wrapper {
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      border-radius: 8px;
+    }
+    .leaflet-popup-tip {
+      background: rgba(0, 0, 0, 0.8);
+    }
+    .leaflet-popup-content a {
+      color: #2196f3;
+    }
+    .leaflet-popup-content h3, .leaflet-popup-content h4 {
+      color: #ecf0f1;
+    }
+  `;
+  document.head.appendChild(style);
+};
+
 // Component to handle map clicks
 function MapClickHandler({ onLocationSelect }) {
   const map = useMapEvents({
@@ -35,6 +58,9 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
   const mapRef = useRef(null);
 
   useEffect(() => {
+    // Add custom styles for popups
+    addCustomPopupStyles();
+    
     // If locations are passed as props and are not empty, use those instead of fetching
     if (propLocations && propLocations.length > 0) {
       setLocations(propLocations);
@@ -73,7 +99,7 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
         setError(`Failed to fetch location data: ${err.message}`);
         setLoading(false);
         
-        // Adicionar dados de localização de teste para desenvolvimento
+        // Add test location data for development
         if (process.env.NODE_ENV === 'development') {
           console.log('Using test data for development');
           const testLocations = [
@@ -100,11 +126,11 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
     fetchLocations();
   }, [propLocations]);
 
-  if (loading) return <div>Loading map...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <div className="map-loading">Loading map...</div>;
+  if (error) return <div className="map-error">Error: {error}</div>;
 
   return (
-    <div className="map-container" style={{ height: '70vh', width: '100%' }}>
+    <div className="map-container">
       <MapContainer 
         center={[38.736946, -9.142685]} // Lisbon coordinates
         zoom={13} 

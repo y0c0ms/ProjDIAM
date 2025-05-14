@@ -1,1 +1,0 @@
-web: PYTHONPATH=$PYTHONPATH:$PWD:$PWD/PriceMapProject/backend gunicorn --pythonpath $PWD:$PWD/PriceMapProject/backend pricemap_wsgi:application 

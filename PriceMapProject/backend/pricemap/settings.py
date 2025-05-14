@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-shxf%%8!^)&%6143e$$0oh@n0tpf$7jz#%=_w)*q!flgy0ho%@')
+SECRET_KEY = 'django-insecure-shxf%%8!^)&%6143e$$0oh@n0tpf$7jz#%=_w)*q!flgy0ho%@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
@@ -52,9 +51,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Deve vir antes de qualquer middleware que possa gerar respostas
+    'corsheaders.middleware.CorsMiddleware',  # Should come before any middleware that generates responses
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -168,13 +166,13 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Configurações CORS
-CORS_ALLOW_ALL_ORIGINS = True  # Permite todas as origens em desenvolvimento
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins in development
 # CORS_ALLOWED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
 # CORS_ALLOWED_ORIGIN_REGEXES = [r"^http://localhost:*$", r"^http://127.0.0.1:*$"]
 
 # Configurações CORS adicionais para lidar com redirecionamentos em solicitações preflight
-CORS_URLS_REGEX = r'^/api/.*$'  # Aplica CORS apenas a URLs que começam com /api/
+CORS_URLS_REGEX = r'^/api/.*$'  # Apply CORS only to URLs that start with /api/
 CORS_ALLOW_CREDENTIALS = True
 CORS_PREFLIGHT_MAX_AGE = 86400  # 24 horas
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
@@ -198,7 +196,7 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# Configurações CSRF para desenvolvimento
+# CSRF Configuration for development
 CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False

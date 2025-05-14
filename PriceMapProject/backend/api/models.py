@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -36,6 +37,13 @@ class Comment(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
+    rating = models.IntegerField(
+        default=1,
+        validators=[
+            MinValueValidator(1, message="Rating must be at least 1"),
+            MaxValueValidator(5, message="Rating cannot be more than 5")
+        ]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

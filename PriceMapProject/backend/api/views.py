@@ -117,7 +117,24 @@ class LocationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def add_comment(self, request, pk=None):
         location = self.get_object()
-        serializer = CommentSerializer(data=request.data)
+        
+        # Get rating from request data with a default of 1
+        rating = request.data.get('rating', 1)
+        try:
+            # Ensure rating is an integer between 1 and 5
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                rating = 1
+        except (ValueError, TypeError):
+            rating = 1
+            
+        # Create comment data with text and rating
+        comment_data = {
+            'text': request.data.get('text', ''),
+            'rating': rating
+        }
+        
+        serializer = CommentSerializer(data=comment_data)
         if serializer.is_valid():
             serializer.save(location=location, user=request.user)
             return Response(serializer.data, status=201)
