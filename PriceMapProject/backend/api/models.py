@@ -33,6 +33,27 @@ class PriceInfo(models.Model):
     def __str__(self):
         return f"{self.product_name} - {self.price} at {self.location.name}"
 
+class PriceValidation(models.Model):
+    ACCURATE = 'accurate'
+    INACCURATE = 'inaccurate'
+    
+    VALIDATION_CHOICES = [
+        (ACCURATE, 'Accurate'),
+        (INACCURATE, 'Inaccurate'),
+    ]
+    
+    price = models.ForeignKey(PriceInfo, on_delete=models.CASCADE, related_name='validations')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='price_validations')
+    validation_type = models.CharField(max_length=20, choices=VALIDATION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        # Ensure each user can only have one validation per price
+        unique_together = ('price', 'user')
+    
+    def __str__(self):
+        return f"{self.get_validation_type_display()} validation by {self.user.username} for {self.price}"
+
 class Comment(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')

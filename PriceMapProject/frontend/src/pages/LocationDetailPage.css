@@ -80,7 +80,7 @@ h2 {  margin-top: 0;  margin-bottom: 15px;  color: #ffffff;  font-size: 1.5rem;}
 
 .price-date, .comment-date {
   font-size: 0.85rem;
-  color: #777;
+  color: #bdc3c7;
 }
 
 .comment-header {
@@ -92,7 +92,7 @@ h2 {  margin-top: 0;  margin-bottom: 15px;  color: #ffffff;  font-size: 1.5rem;}
 
 .comment-author {
   font-weight: 600;
-  color: #444;
+  color: #4b9cd3;
 }
 
 .comment-text {  line-height: 1.5;  color: #ffffff;}
@@ -100,7 +100,83 @@ h2 {  margin-top: 0;  margin-bottom: 15px;  color: #ffffff;  font-size: 1.5rem;}
 .add-price-section, .add-comment-section {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Price validation styles */
+.price-validation {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.validation-counts {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 5px;
+}
+
+.accurate-count, .inaccurate-count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #ecf0f1;
+  font-size: 0.9rem;
+}
+
+.check-icon {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.cross-icon {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.last-validation {
+  font-size: 0.8rem;
+  color: #bdc3c7;
+  margin-bottom: 8px;
+}
+
+.validation-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.validation-buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.accurate-btn {
+  border: 1px solid #4caf50;
+}
+
+.accurate-btn:hover, .accurate-btn.active {
+  background-color: rgba(76, 175, 80, 0.3);
+}
+
+.inaccurate-btn {
+  border: 1px solid #e74c3c;
+}
+
+.inaccurate-btn:hover, .inaccurate-btn.active {
+  background-color: rgba(231, 76, 60, 0.3);
+}
+
+.accurate-btn .check-icon, .inaccurate-btn .cross-icon {
+  font-size: 1.2rem;
 }
 
 @media (max-width: 767px) {

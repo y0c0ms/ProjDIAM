@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.utils.decorators import method_decorator
-from .models import Location, PriceInfo, Comment, UserProfile
+from .models import Location, PriceInfo, Comment, UserProfile, PriceValidation
 from .serializers import LocationSerializer, PriceInfoSerializer, CommentSerializer, UserSerializer, UserProfileSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 import json
@@ -46,7 +46,15 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 class LocationViewSet(viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Removed IsOwnerOrReadOnly to allow any logged-in user to add prices/comments
+    
+    def get_serializer_context(self):
+        """
+        Pass request to serializer context so we can get the current user
+        """
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
     
     def perform_create(self, serializer):
         # Try to get address from coordinates if not provided
@@ -143,15 +151,48 @@ class LocationViewSet(viewsets.ModelViewSet):
 class PriceInfoViewSet(viewsets.ModelViewSet):
     queryset = PriceInfo.objects.all()
     serializer_class = PriceInfoSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def get_serializer_context(self):
+        """
+        Pass request to serializer context so we can get the current user
+        """
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
     
     def perform_create(self, serializer):
         serializer.save(reported_by=self.request.user)
+    
+    @action(detail=True, methods=['post'])
+    def validate(self, request, pk=None):
+        """
+        Add or update a validation for a price
+        """
+        price = self.get_object()
+        validation_type = request.data.get('validation_type')
+        
+        if validation_type not in [PriceValidation.ACCURATE, PriceValidation.INACCURATE]:
+            return Response(
+                {'error': 'Invalid validation type. Must be "accurate" or "inaccurate"'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create or update the validation
+        validation, created = PriceValidation.objects.update_or_create(
+            price=price,
+            user=request.user,
+            defaults={'validation_type': validation_type}
+        )
+        
+        # Get updated price data with new validation counts
+        serializer = self.get_serializer(price)
+        return Response(serializer.data)
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

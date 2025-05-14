@@ -67,6 +67,33 @@ const LocationDetailPage = () => {
     });
   };
   
+  const handleValidatePrice = async (priceId, validationType) => {
+    if (!isLoggedIn) {
+      alert('You must be logged in to validate prices');
+      return;
+    }
+    
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/prices/${priceId}/validate/`,
+        { validation_type: validationType }
+      );
+      
+      // Update the price in the local state
+      const updatedPrices = location.prices.map(price => 
+        price.id === priceId ? response.data : price
+      );
+      
+      setLocation({
+        ...location,
+        prices: updatedPrices
+      });
+    } catch (err) {
+      console.error('Error validating price:', err);
+      alert('Failed to validate price');
+    }
+  };
+  
   const openInGoogleMaps = () => {
     if (location) {
       const googleMapsUrl = `https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
@@ -110,6 +137,43 @@ const LocationDetailPage = () => {
                     Reported on {new Date(price.date_reported).toLocaleDateString()} 
                     by {price.reported_by.username}
                   </span>
+                  
+                  {/* Price validation section */}
+                  <div className="price-validation">
+                    <div className="validation-counts">
+                      <span className="accurate-count">
+                        <span className="check-icon">✓</span> {price.accurate_count || 0}
+                      </span>
+                      <span className="inaccurate-count">
+                        <span className="cross-icon">✗</span> {price.inaccurate_count || 0}
+                      </span>
+                    </div>
+                    
+                    {price.last_validation_date && (
+                      <div className="last-validation">
+                        Last validation: {new Date(price.last_validation_date).toLocaleDateString()}
+                      </div>
+                    )}
+                    
+                    {isLoggedIn && (
+                      <div className="validation-buttons">
+                        <button 
+                          className={`accurate-btn ${price.current_user_validation === 'accurate' ? 'active' : ''}`}
+                          onClick={() => handleValidatePrice(price.id, 'accurate')}
+                          aria-label="Mark as accurate"
+                        >
+                          <span className="check-icon">✓</span>
+                        </button>
+                        <button 
+                          className={`inaccurate-btn ${price.current_user_validation === 'inaccurate' ? 'active' : ''}`}
+                          onClick={() => handleValidatePrice(price.id, 'inaccurate')}
+                          aria-label="Mark as inaccurate"
+                        >
+                          <span className="cross-icon">✗</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
