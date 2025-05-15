@@ -21,11 +21,19 @@
 .navbar-brand {
   font-size: 24px;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin-right: 50px;
 }
 
 .navbar-brand a {
   text-decoration: none;
   color: #fff;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0;
 }
 
 .navbar-brand h1 {
@@ -37,7 +45,9 @@
 .navbar-menu {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 30px;
+  height: 100%;
+  margin-left: auto;
 }
 
 .navbar-item {
@@ -45,10 +55,11 @@
   text-decoration: none;
   font-size: 16px;
   transition: color 0.3s;
-  padding: 10px 0;
+  padding: 0;
   display: flex;
   align-items: center;
   gap: 5px;
+  height: 100%;
 }
 
 .navbar-item:hover {
@@ -57,6 +68,10 @@
 
 .user-greeting {
   color: #bdc3c7;
+}
+
+.user-greeting:hover {
+  color: #3498db;
 }
 
 .admin-link {

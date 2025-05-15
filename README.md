@@ -1,3 +1,4 @@
+imagem scroll : https://undercoverbrothers.com/wp-content/uploads/2019/06/Scroll-Down-Arrow.png
 # PriceMap: Plataforma Colaborativa de Comparação de Preços
 
 ## Sobre o Projeto
