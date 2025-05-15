@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Map from '../components/Map';
+import ScrollIndicator from '../components/ScrollIndicator';
 import authService from '../services/authService';
 import axios from 'axios';
+import './HomePage.css';
 
 const HomePage = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -14,11 +16,15 @@ const HomePage = () => {
     longitude: ''
   });
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [formStatus, setFormStatus] = useState({
+    error: '',
+    success: '',
+    isSubmitting: false
+  });
 
   const isLoggedIn = authService.isLoggedIn();
 
+  // Fetch locations on component mount
   useEffect(() => {
     fetchLocations();
   }, []);
@@ -32,15 +38,24 @@ const HomePage = () => {
     }
   };
 
-  const handleLocationSelect = async (lat, lng) => {
-    setSelectedPosition({ lat, lng });
-    setNewLocationData({
-      ...newLocationData,
+  // Simple handle location select function that doesn't trigger rerenders
+  const handleLocationSelect = useCallback((lat, lng) => {
+    // Update coordinates in form data
+    setNewLocationData(prev => ({
+      ...prev,
       latitude: lat,
       longitude: lng
-    });
+    }));
     
-    // Get address from coordinates
+    // Set selected position for map marker
+    setSelectedPosition({ lat, lng });
+    
+    // Get address from coordinates (in a separate function)
+    fetchAddressForCoordinates(lat, lng);
+  }, []);
+  
+  // Separate function to fetch address to reduce complexity
+  const fetchAddressForCoordinates = async (lat, lng) => {
     try {
       setIsLoadingAddress(true);
       const response = await axios.post(
@@ -63,20 +78,29 @@ const HomePage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewLocationData({
-      ...newLocationData,
+    setNewLocationData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    
+    // Reset status
+    setFormStatus({
+      error: '',
+      success: '',
+      isSubmitting: true
+    });
 
     try {
       if (!isLoggedIn) {
-        setError('You must be logged in to add a location');
+        setFormStatus({
+          error: 'You must be logged in to add a location',
+          success: '',
+          isSubmitting: false
+        });
         return;
       }
 
@@ -89,124 +113,145 @@ const HomePage = () => {
         }
       };
 
-      const response = await axios.post(
+      await axios.post(
         'http://localhost:8000/api/locations/', 
         newLocationData,
         config
       );
 
-      setSuccess('Location added successfully!');
-      setNewLocationData({
-        name: '',
-        address: '',
-        latitude: '',
-        longitude: ''
+      // Show success and reset form
+      setFormStatus({
+        error: '',
+        success: 'Location added successfully!',
+        isSubmitting: false
       });
-      setSelectedPosition(null);
-      setShowAddForm(false);
       
-      // Refresh locations
+      // Reset the form
+      resetForm();
+      
+      // Refresh locations list
       fetchLocations();
     } catch (err) {
       console.error('Error adding location:', err);
-      setError(err.response?.data?.message || 'Failed to add location');
+      setFormStatus({
+        error: err.response?.data?.message || 'Failed to add location',
+        success: '',
+        isSubmitting: false
+      });
+    }
+  };
+  
+  // Separate function to reset form state
+  const resetForm = () => {
+    setNewLocationData({
+      name: '',
+      address: '',
+      latitude: '',
+      longitude: ''
+    });
+    setSelectedPosition(null);
+  };
+
+  const toggleAddLocationMode = () => {
+    const newShowAddForm = !showAddForm;
+    setShowAddForm(newShowAddForm);
+    
+    // Reset form when canceling
+    if (!newShowAddForm) {
+      resetForm();
+      setFormStatus({
+        error: '',
+        success: '',
+        isSubmitting: false
+      });
     }
   };
 
+  // Memoize locations to prevent unnecessary re-renders
+  const displayLocations = showAddForm ? [] : locations;
+
+  // Determine if scroll arrows should be shown
+  const shouldShowScrollArrows = showAddForm && selectedPosition;
+
   return (
     <div className="home-page">
-      <h1>Price Map - Lisboa</h1>
-      <p>Find the best prices for products in different locations around Lisboa</p>
-
-      <div className="map-section">
-        <Map 
-          locations={showAddForm ? [] : locations} 
-          onLocationSelect={showAddForm ? handleLocationSelect : null}
-          selectedPosition={selectedPosition}
-        />
+      <div className="map-wrapper">
+        <div className="map-section">
+          <Map 
+            locations={displayLocations}
+            onLocationSelect={showAddForm ? handleLocationSelect : null}
+            selectedPosition={selectedPosition}
+          />
+        </div>
+        <ScrollIndicator show={shouldShowScrollArrows} />
       </div>
 
-      {isLoggedIn ? (
+      {isLoggedIn && (
         <div className="action-section">
           <button 
-            className="toggle-form-btn"
-            onClick={() => {
-              setShowAddForm(!showAddForm);
-              if (!showAddForm) {
-                setSelectedPosition(null);
-                setNewLocationData({
-                  name: '',
-                  address: '',
-                  latitude: '',
-                  longitude: ''
-                });
-              }
-            }}
+            className={`toggle-form-btn ${showAddForm ? 'active' : ''}`}
+            onClick={toggleAddLocationMode}
           >
             {showAddForm ? 'Cancel' : 'Add New Location'}
           </button>
-
-          {showAddForm && (
-            <div className="location-form">
-              <h3>Add New Location</h3>
-              {error && <div className="error-message">{error}</div>}
-              {success && <div className="success-message">{success}</div>}
-              
-              <p className="instruction-text">
-                Click on the map to select a location
-              </p>
-              
-              <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="name">Location Name:</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={newLocationData.name}
-                    onChange={handleChange}
-                    required
-                    className="form-control"
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="address">Address:</label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    value={newLocationData.address}
-                    onChange={handleChange}
-                    className="form-control"
-                    disabled={isLoadingAddress}
-                  />
-                  {isLoadingAddress && <div className="loading-indicator">Fetching address...</div>}
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Coordinates:</label>
-                    <p>
-                      {selectedPosition 
-                        ? `Lat: ${selectedPosition.lat.toFixed(6)}, Lng: ${selectedPosition.lng.toFixed(6)}` 
-                        : 'No location selected'}
-                    </p>
-                  </div>
-                </div>
-                
-                <button 
-                  type="submit" 
-                  className="submit-button"
-                  disabled={!selectedPosition}
-                >
-                  Add Location
-                </button>
-              </form>
-            </div>
-          )}
         </div>
-      ) : (
+      )}
+
+      {showAddForm && (
+        <div className="location-form">
+          <h3>Add New Location</h3>
+          {formStatus.error && <div className="error-message">{formStatus.error}</div>}
+          {formStatus.success && <div className="success-message">{formStatus.success}</div>}
+          
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="name">Location Name:</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={newLocationData.name}
+                onChange={handleChange}
+                required
+                disabled={formStatus.isSubmitting}
+                placeholder="e.g., Café Central"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="address">Address:</label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={newLocationData.address}
+                onChange={handleChange}
+                disabled={isLoadingAddress || formStatus.isSubmitting}
+                placeholder="Will be filled automatically when you select a location"
+              />
+              {isLoadingAddress && <div className="loading-indicator">Fetching address...</div>}
+            </div>
+            
+            <div className="location-coordinates">
+              <p>
+                {selectedPosition 
+                  ? `Coordinates: ${selectedPosition.lat.toFixed(6)}, ${selectedPosition.lng.toFixed(6)}` 
+                  : 'Click on the map to select a location'}
+              </p>
+            </div>
+            
+            <button 
+              type="submit" 
+              className="submit-button"
+              disabled={!selectedPosition || formStatus.isSubmitting}
+            >
+              {formStatus.isSubmitting ? 'Adding...' : 'Add Location'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {!isLoggedIn && (
         <div className="login-prompt">
           <p>Please login to add new locations or prices</p>
         </div>

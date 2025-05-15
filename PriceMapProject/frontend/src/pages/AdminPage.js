@@ -10,6 +10,7 @@ const AdminPage = () => {
   const [users, setUsers] = useState([]);
   const [locations, setLocations] = useState([]);
   const [prices, setPrices] = useState([]);
+  const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -77,6 +78,21 @@ const AdminPage = () => {
     }
   };
 
+  // Fetch comments
+  const fetchComments = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await axios.get('http://localhost:8000/api/comments/', getAuthHeader());
+      setComments(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching comments:', err);
+      setError('Failed to fetch comments. ' + (err.response?.data?.message || err.message));
+      setLoading(false);
+    }
+  };
+
   // Load data based on active tab
   useEffect(() => {
     if (activeTab === 'users') {
@@ -85,6 +101,8 @@ const AdminPage = () => {
       fetchLocations();
     } else if (activeTab === 'prices') {
       fetchPrices();
+    } else if (activeTab === 'comments') {
+      fetchComments();
     }
   }, [activeTab]);
 
@@ -136,6 +154,22 @@ const AdminPage = () => {
     }
   };
 
+  // Delete comment
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+    
+    try {
+      setLoading(true);
+      await axios.delete(`http://localhost:8000/api/comments/${commentId}/`, getAuthHeader());
+      setSuccessMessage('Comment deleted successfully');
+      fetchComments();
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+      setError('Failed to delete comment. ' + (err.response?.data?.message || err.message));
+      setLoading(false);
+    }
+  };
+
   // Clear messages after 5 seconds
   useEffect(() => {
     if (successMessage) {
@@ -154,6 +188,11 @@ const AdminPage = () => {
       return () => clearTimeout(timer);
     }
   }, [error]);
+
+  // Helper function to format rating as stars
+  const renderStars = (rating) => {
+    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  };
 
   return (
     <div className="admin-page">
@@ -180,6 +219,12 @@ const AdminPage = () => {
           onClick={() => setActiveTab('prices')}
         >
           Prices
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'comments' ? 'active' : ''}`}
+          onClick={() => setActiveTab('comments')}
+        >
+          Comments
         </button>
       </div>
       
@@ -290,6 +335,45 @@ const AdminPage = () => {
                           <button 
                             className="delete-btn"
                             onClick={() => handleDeletePrice(price.id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {activeTab === 'comments' && (
+              <div className="comments-tab">
+                <h2>Manage Comments</h2>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Location</th>
+                      <th>User</th>
+                      <th>Comment</th>
+                      <th>Rating</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comments.map(comment => (
+                      <tr key={comment.id}>
+                        <td>{comment.id}</td>
+                        <td>{comment.location?.name || 'Unknown'}</td>
+                        <td>{comment.user?.username || 'Unknown'}</td>
+                        <td className="comment-text-cell">{comment.text}</td>
+                        <td className="rating-cell">{renderStars(comment.rating)}</td>
+                        <td>{new Date(comment.created_at).toLocaleDateString()}</td>
+                        <td>
+                          <button 
+                            className="delete-btn"
+                            onClick={() => handleDeleteComment(comment.id)}
                           >
                             Delete
                           </button>

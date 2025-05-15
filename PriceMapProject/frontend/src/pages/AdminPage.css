@@ -116,6 +116,28 @@
   color: #bdc3c7;
 }
 
+/* Comment-specific styles */
+.comment-text-cell {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rating-cell {
+  color: #f5c518;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.comments-tab .admin-table {
+  table-layout: fixed;
+}
+
+.comments-tab .admin-table th:nth-child(4) {
+  width: 30%;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .admin-tabs {

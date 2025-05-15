@@ -1,0 +1,83 @@
+.price-form {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.price-form h3 {
+  margin-top: 0;
+  color: #ffffff;
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #ecf0f1;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+}
+
+.price-form button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.price-form button:hover {
+  background-color: #388e3c;
+}
+
+.price-form button:disabled {
+  background-color: #7cb342;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.price-form button.submitting {
+  background-color: #7cb342;
+}
+
+.error-message {
+  background-color: rgba(231, 76, 60, 0.3);
+  border-left: 4px solid #e74c3c;
+  color: #ffffff;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 0 4px 4px 0;
+}
+
+.success-message {
+  background-color: rgba(46, 204, 113, 0.3);
+  border-left: 4px solid #2ecc71;
+  color: #ffffff;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 0 4px 4px 0;
+}
+
+.form-help {
+  margin-top: 15px;
+  font-size: 0.8rem;
+  color: #bdc3c7;
+  font-style: italic;
+} 

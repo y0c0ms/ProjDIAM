@@ -41,22 +41,49 @@ const addCustomPopupStyles = () => {
 };
 
 // Component to handle map clicks
-function MapClickHandler({ onLocationSelect }) {
+function MapClickHandler({ onLocationSelect, mapRef }) {
+  const [isClickable, setIsClickable] = useState(true);
+  
   const map = useMapEvents({
     click: (e) => {
+      if (!isClickable) return;
+      
       const { lat, lng } = e.latlng;
+      
+      // Save current zoom level
+      const currentZoom = map.getZoom();
+      
+      // Call the location select callback
       onLocationSelect(lat, lng);
+      
+      // Use setTimeout to ensure this runs after state updates
+      setTimeout(() => {
+        // Restore the zoom level
+        if (map && mapRef.current === map) {
+          map.setView([lat, lng], currentZoom, {
+            animate: true,
+            duration: 0.5
+          });
+        }
+      }, 50);
+      
+      // Temporarily disable clicking to prevent multiple rapid clicks
+      setIsClickable(false);
+      setTimeout(() => {
+        setIsClickable(true);
+      }, 500); // Re-enable after 500ms
     }
   });
   return null;
 }
 
 const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, selectedPosition }) => {
-  const [locations, setLocations] = useState(propLocations || []);
+  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const mapRef = useRef(null);
-
+  
+  // Only fetch locations once on initial mount
   useEffect(() => {
     // Add custom styles for popups
     addCustomPopupStyles();
@@ -124,7 +151,28 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
     };
 
     fetchLocations();
-  }, [propLocations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);  // Only run on mount
+  
+  // Update locations when propLocations changes, but only if it's different
+  useEffect(() => {
+    if (propLocations && JSON.stringify(propLocations) !== JSON.stringify(locations)) {
+      setLocations(propLocations);
+    }
+  }, [propLocations, locations]);
+
+  // Update marker position when selectedPosition changes
+  useEffect(() => {
+    if (selectedPosition && mapRef.current) {
+      // Don't change the zoom level, just pan to the new position
+      const map = mapRef.current;
+      const currentZoom = map.getZoom();
+      
+      map.setView([selectedPosition.lat, selectedPosition.lng], currentZoom, {
+        animate: true
+      });
+    }
+  }, [selectedPosition]);
 
   if (loading) return <div className="map-loading">Loading map...</div>;
   if (error) return <div className="map-error">Error: {error}</div>;
@@ -135,7 +183,9 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
         center={[38.736946, -9.142685]} // Lisbon coordinates
         zoom={13} 
         style={{ height: '100%', width: '100%' }}
-        ref={mapRef}
+        whenCreated={(map) => {
+          mapRef.current = map;
+        }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -143,11 +193,19 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
         />
         
         {/* Handler for map clicks */}
-        {onLocationSelect && <MapClickHandler onLocationSelect={onLocationSelect} />}
+        {onLocationSelect && (
+          <MapClickHandler 
+            onLocationSelect={onLocationSelect} 
+            mapRef={mapRef}
+          />
+        )}
         
         {/* Show temporary marker for selected position */}
         {selectedPosition && (
-          <Marker position={[selectedPosition.lat, selectedPosition.lng]}>
+          <Marker 
+            position={[selectedPosition.lat, selectedPosition.lng]}
+            key="selected-position" // Force a new instance when position changes
+          >
             <Popup>
               <div>
                 <p>Selected Location</p>

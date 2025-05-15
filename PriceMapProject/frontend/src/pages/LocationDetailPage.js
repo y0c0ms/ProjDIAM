@@ -28,39 +28,37 @@ const LocationDetailPage = () => {
   
   const isLoggedIn = authService.isLoggedIn();
 
-  useEffect(() => {
-    const fetchLocationDetails = async () => {
-      try {
-        setLoading(true);
-        
-        // Check if we have an auth token
-        const token = localStorage.getItem('token');
-        const config = token 
-          ? { headers: { 'Authorization': `Token ${token}` } } 
-          : {};
-          
-        const response = await axios.get(`http://localhost:8000/api/locations/${id}/`, config);
-        console.log('Location details fetched:', response.data);
-        setLocation(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch location details');
-        setLoading(false);
-        console.error('Error fetching location:', err);
-      }
-    };
-
-    fetchLocationDetails();
-  }, [id]);
-
-  const handlePriceAdded = (newPrice) => {
-    setLocation({
-      ...location,
-      prices: [...location.prices, newPrice]
-    });
+  // Function to fetch the latest location data
+  const refreshLocation = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const config = token ? { headers: { 'Authorization': `Token ${token}` } } : {};
+      
+      const response = await axios.get(`http://localhost:8000/api/locations/${id}/`, config);
+      setLocation(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to refresh location data');
+      setLoading(false);
+      console.error('Error refreshing location:', err);
+    }
   };
 
+  // Initial data fetch
+  useEffect(() => {
+    refreshLocation();
+  }, [id]);
+
+  // Handle when a new price is added
+  const handlePriceAdded = () => {
+    // Refresh location data to show updated prices
+    refreshLocation();
+  };
+
+  // Handle when a new comment is added
   const handleCommentAdded = (newComment) => {
+    // Just append the new comment to avoid a full refresh
     setLocation({
       ...location,
       comments: [...location.comments, newComment]
@@ -105,11 +103,33 @@ const LocationDetailPage = () => {
   if (error) return <div>Error: {error}</div>;
   if (!location) return <div>Location not found</div>;
 
+  // Calculate average rating
+  const calculateAverageRating = () => {
+    if (!location.comments || location.comments.length === 0) return 0;
+    
+    const sum = location.comments.reduce((total, comment) => total + comment.rating, 0);
+    return (sum / location.comments.length).toFixed(1);
+  };
+  
+  const averageRating = calculateAverageRating();
+  const commentCount = location.comments ? location.comments.length : 0;
+
   return (
     <div className="location-detail-page">
       <Link to="/" className="back-link">← Back to Map</Link>
       
-      <h1>{location.name}</h1>
+      <div className="location-title-section">
+        <h1>{location.name}</h1>
+        
+        {commentCount > 0 && (
+          <div className="title-rating">
+            <span className="average-rating">{averageRating}</span>
+            <StarDisplay rating={Math.round(averageRating)} />
+            <span className="comment-count">({commentCount})</span>
+          </div>
+        )}
+      </div>
+      
       {location.address && <p className="location-address">{location.address}</p>}
       
       <div className="location-meta">
@@ -151,7 +171,13 @@ const LocationDetailPage = () => {
                     
                     {price.last_validation_date && (
                       <div className="last-validation">
-                        Last validation: {new Date(price.last_validation_date).toLocaleDateString()}
+                        {price.price_status === 'outdated' ? (
+                          <span className="outdated">Outdated</span>
+                        ) : price.price_status === 'unvalidated' ? (
+                          <span className="unvalidated">Not yet validated</span>
+                        ) : (
+                          `Last validation: ${new Date(price.last_validation_date).toLocaleDateString()}`
+                        )}
                       </div>
                     )}
                     
@@ -161,6 +187,7 @@ const LocationDetailPage = () => {
                           className={`accurate-btn ${price.current_user_validation === 'accurate' ? 'active' : ''}`}
                           onClick={() => handleValidatePrice(price.id, 'accurate')}
                           aria-label="Mark as accurate"
+                          title="Confirm this price is accurate"
                         >
                           <span className="check-icon">✓</span>
                         </button>
@@ -168,6 +195,7 @@ const LocationDetailPage = () => {
                           className={`inaccurate-btn ${price.current_user_validation === 'inaccurate' ? 'active' : ''}`}
                           onClick={() => handleValidatePrice(price.id, 'inaccurate')}
                           aria-label="Mark as inaccurate"
+                          title="Flag this price as outdated"
                         >
                           <span className="cross-icon">✗</span>
                         </button>

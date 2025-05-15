@@ -17,7 +17,39 @@
   text-decoration: underline;
 }
 
-h1 {  margin-bottom: 10px;  color: #ffffff;}
+.location-title-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.location-title-section h1 {
+  margin-bottom: 0;
+}
+
+.title-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.title-rating .average-rating {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #f5c518;
+}
+
+.title-rating .comment-count {
+  color: #bdc3c7;
+  font-size: 0.9rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+h1 {  color: #ffffff;}
 
 .location-address {  margin-bottom: 10px;  color: #ecf0f1;  font-style: italic;}
 
@@ -45,6 +77,57 @@ h1 {  margin-bottom: 10px;  color: #ffffff;}
 
 .map-icon {
   font-size: 18px;
+}
+
+.location-rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 8px;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.average-rating {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #f5c518;
+}
+
+.comment-count {
+  color: #ecf0f1;
+  font-size: 0.9rem;
+}
+
+.no-ratings {
+  color: #ecf0f1;
+  font-style: italic;
+}
+
+/* Star display component styling */
+.star-display {
+  display: flex;
+  gap: 3px;
+}
+
+.star {
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3e%3cpath d='M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z' fill='%23333' stroke='%23333' stroke-width='0.5'/%3e%3c/svg%3e");
+}
+
+.star.filled {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3e%3cpath d='M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z' fill='%23f5c518' stroke='%23f5c518' stroke-width='0.5'/%3e%3c/svg%3e");
 }
 
 .location-details {
@@ -138,6 +221,16 @@ h2 {  margin-top: 0;  margin-bottom: 15px;  color: #ffffff;  font-size: 1.5rem;}
   font-size: 0.8rem;
   color: #bdc3c7;
   margin-bottom: 8px;
+}
+
+.outdated {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.unvalidated {
+  color: #f39c12;
+  font-style: italic;
 }
 
 .validation-buttons {

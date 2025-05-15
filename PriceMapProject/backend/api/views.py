@@ -123,12 +123,35 @@ class LocationViewSet(viewsets.ModelViewSet):
         
     @action(detail=True, methods=['post'])
     def add_price(self, request, pk=None):
+        """
+        Add a new price for a product at this location.
+        If a price for this product already exists, it will be replaced.
+        """
         location = self.get_object()
         serializer = PriceInfoSerializer(data=request.data)
+        
         if serializer.is_valid():
-            serializer.save(location=location, reported_by=request.user)
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            # Get product name from validated data
+            product_name = serializer.validated_data['product_name']
+            
+            # Delete existing prices for this product at this location
+            old_prices = PriceInfo.objects.filter(
+                location=location, 
+                product_name=product_name
+            )
+            
+            # Log deletion info for debugging
+            if old_prices.exists():
+                print(f"Replacing {old_prices.count()} existing price(s) for '{product_name}' at {location.name}")
+                old_prices.delete()
+            
+            # Save the new price
+            new_price = serializer.save(location=location, reported_by=request.user)
+            print(f"Added new price for '{product_name}': €{new_price.price} at {location.name}")
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=True, methods=['post'])
     def add_comment(self, request, pk=None):

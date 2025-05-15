@@ -1,60 +1,85 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';
+import './PriceForm.css';
 
 const PriceForm = ({ locationId, onPriceAdded }) => {
   const [formData, setFormData] = useState({
     product_name: '',
     price: '',
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [status, setStatus] = useState({
+    error: '',
+    success: '',
+    isSubmitting: false
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    
+    // Reset status
+    setStatus({
+      error: '',
+      success: '',
+      isSubmitting: true
+    });
 
     try {
+      // Check login status
       if (!authService.isLoggedIn()) {
-        setError('You must be logged in to add a price');
+        setStatus({
+          error: 'You must be logged in to add a price',
+          success: '',
+          isSubmitting: false
+        });
         return;
       }
 
-      const response = await axios.post(
+      // Submit the new price
+      await axios.post(
         `http://localhost:8000/api/locations/${locationId}/add_price/`, 
         formData
       );
 
-      setSuccess('Price added successfully!');
+      // Reset form and show success message
       setFormData({
         product_name: '',
         price: '',
       });
+      
+      setStatus({
+        error: '',
+        success: 'Price added successfully!',
+        isSubmitting: false
+      });
 
-      // Call the callback to update the parent component
+      // Notify parent component to refresh data
       if (onPriceAdded) {
-        onPriceAdded(response.data);
+        onPriceAdded();
       }
     } catch (err) {
       console.error('Error adding price:', err);
-      setError(err.response?.data?.message || 'Failed to add price');
+      setStatus({
+        error: err.response?.data?.message || 'Failed to add price',
+        success: '',
+        isSubmitting: false
+      });
     }
   };
 
   return (
     <div className="price-form">
       <h3>Add New Price</h3>
-      {error && <div className="error">{error}</div>}
-      {success && <div className="success">{success}</div>}
+      {status.error && <div className="error-message">{status.error}</div>}
+      {status.success && <div className="success-message">{status.success}</div>}
       
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -66,6 +91,8 @@ const PriceForm = ({ locationId, onPriceAdded }) => {
             value={formData.product_name}
             onChange={handleChange}
             required
+            disabled={status.isSubmitting}
+            placeholder="e.g., Milk, Bread, Coffee..."
           />
         </div>
         
@@ -79,10 +106,22 @@ const PriceForm = ({ locationId, onPriceAdded }) => {
             value={formData.price}
             onChange={handleChange}
             required
+            disabled={status.isSubmitting}
+            placeholder="0.00"
+            min="0.01"
           />
         </div>
         
-        <button type="submit">Add Price</button>
+        <button 
+          type="submit" 
+          disabled={status.isSubmitting}
+          className={status.isSubmitting ? 'submitting' : ''}
+        >
+          {status.isSubmitting ? 'Adding...' : 'Add Price'}
+        </button>
+        <p className="form-help">
+          Adding a new price for an existing product will replace the old price.
+        </p>
       </form>
     </div>
   );
