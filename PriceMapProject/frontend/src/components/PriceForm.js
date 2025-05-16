@@ -1,9 +1,26 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';
 import config from '../services/config';
 import '../styles/components/PriceForm.css';
 
+/**
+ * PriceForm component for adding or updating product prices at a location
+ * Features:
+ * - Simple form for product name and price entry
+ * - Handles authentication requirements
+ * - Automatically replaces existing prices for the same product
+ *
+ * @param {number} locationId - The ID of the location to add prices to
+ * @param {Function} onPriceAdded - Callback function triggered after successful submission
+ */
 const PriceForm = ({ locationId, onPriceAdded }) => {
   const [formData, setFormData] = useState({
     product_name: '',
@@ -15,6 +32,10 @@ const PriceForm = ({ locationId, onPriceAdded }) => {
     isSubmitting: false
   });
 
+  /**
+   * Handle form input changes
+   * Updates the formData state with new values
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -23,6 +44,10 @@ const PriceForm = ({ locationId, onPriceAdded }) => {
     }));
   };
 
+  /**
+   * Handle form submission
+   * Validates user authentication and submits price data to the API
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     

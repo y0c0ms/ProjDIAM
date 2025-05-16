@@ -1,10 +1,16 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Map from '../components/Map';
 import ScrollIndicator from '../components/ScrollIndicator';
 import authService from '../services/authService';
 import axios from 'axios';
 import '../styles/pages/HomePage.css';
-import '../styles/mobile/HomePage.mobile.css';
 
 const HomePage = () => {
   const [showAddForm, setShowAddForm] = useState(false);

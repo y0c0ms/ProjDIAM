@@ -1,14 +1,27 @@
+'''
+Code made by:
+- Manuel Santos nº 111087
+- Alexandre Mendes nº 111026
+- Vlad Ganta nº 110672
+'''
+
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Location, PriceInfo, Comment, UserProfile, PriceValidation
 from django.db.models import Count, Q
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the UserProfile model
+    """
     class Meta:
         model = UserProfile
         fields = ['profile_image', 'bio', 'phone']
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Django User model with nested profile data
+    """
     profile = UserProfileSerializer(read_only=True)
     
     class Meta:
@@ -16,6 +29,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'profile', 'is_staff', 'date_joined', 'is_active']
 
 class PriceValidationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for price validations with nested user data
+    """
     user = UserSerializer(read_only=True)
     
     class Meta:
@@ -23,6 +39,10 @@ class PriceValidationSerializer(serializers.ModelSerializer):
         fields = ['id', 'validation_type', 'created_at', 'user']
 
 class PriceInfoSerializer(serializers.ModelSerializer):
+    """
+    Serializer for price information with additional computed fields
+    Includes validation counts and status information
+    """
     reported_by = UserSerializer(read_only=True)
     accurate_count = serializers.SerializerMethodField()
     inaccurate_count = serializers.SerializerMethodField()
@@ -38,16 +58,23 @@ class PriceInfoSerializer(serializers.ModelSerializer):
                  'current_user_validation', 'last_validation_inaccurate', 'price_status']
     
     def get_accurate_count(self, obj):
+        """Returns the count of accurate validations for this price"""
         return obj.validations.filter(validation_type=PriceValidation.ACCURATE).count()
     
     def get_inaccurate_count(self, obj):
+        """Returns the count of inaccurate validations for this price"""
         return obj.validations.filter(validation_type=PriceValidation.INACCURATE).count()
     
     def get_last_validation_date(self, obj):
+        """Returns the date of the most recent validation"""
         latest = obj.validations.order_by('-created_at').first()
         return latest.created_at if latest else None
     
     def get_current_user_validation(self, obj):
+        """
+        Returns the current user's validation type for this price
+        Used to show the user's current vote in the UI
+        """
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             validation = obj.validations.filter(user=request.user).first()
@@ -56,6 +83,7 @@ class PriceInfoSerializer(serializers.ModelSerializer):
         return None
         
     def get_last_validation_inaccurate(self, obj):
+        """Returns True if the most recent validation was inaccurate"""
         latest = obj.validations.order_by('-created_at').first()
         return latest and latest.validation_type == PriceValidation.INACCURATE
     
@@ -65,6 +93,7 @@ class PriceInfoSerializer(serializers.ModelSerializer):
         - 'current': No validations or more accurate than inaccurate
         - 'outdated': More inaccurate than accurate validations
         - 'unvalidated': No validations yet
+        This status is used for UI indicators (color coding, badges, etc.)
         """
         accurate = self.get_accurate_count(obj)
         inaccurate = self.get_inaccurate_count(obj)
@@ -77,6 +106,10 @@ class PriceInfoSerializer(serializers.ModelSerializer):
             return 'current'
 
 class CommentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for comments with nested user data
+    Includes simplified location data
+    """
     user = UserSerializer(read_only=True)
     location = serializers.SerializerMethodField()
     
@@ -85,6 +118,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'text', 'rating', 'created_at', 'user', 'location']
         
     def get_location(self, obj):
+        """Returns simplified location data for the comment"""
         if obj.location:
             return {
                 'id': obj.location.id,
@@ -93,6 +127,10 @@ class CommentSerializer(serializers.ModelSerializer):
         return None
 
 class LocationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for locations with nested price and comment data
+    Includes full price history and all comments for the location
+    """
     created_by = UserSerializer(read_only=True)
     prices = PriceInfoSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)

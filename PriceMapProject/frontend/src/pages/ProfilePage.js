@@ -1,3 +1,10 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';

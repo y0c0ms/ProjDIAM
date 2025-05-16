@@ -1,3 +1,10 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';
@@ -5,6 +12,12 @@ import config from '../services/config';
 import Map from './Map';
 import '../styles/components/LocationForm.css';
 
+/**
+ * Form component for adding new locations to the map
+ * Allows users to select locations either by clicking on the map or entering coordinates manually
+ * 
+ * @param {Function} onLocationAdded - Callback function executed when a new location is successfully added
+ */
 const LocationForm = ({ onLocationAdded }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -18,6 +31,10 @@ const LocationForm = ({ onLocationAdded }) => {
   const [showCoordinatesForm, setShowCoordinatesForm] = useState(false);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
 
+  /**
+   * Handle form input changes
+   * Updates the formData state with new values
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -26,6 +43,13 @@ const LocationForm = ({ onLocationAdded }) => {
     });
   };
 
+  /**
+   * Handle map click events
+   * Updates form data with selected coordinates and fetches address
+   * 
+   * @param {number} lat - Latitude of clicked position
+   * @param {number} lng - Longitude of clicked position
+   */
   const handleMapClick = async (lat, lng) => {
     setSelectedPosition({ lat, lng });
     setFormData({
@@ -51,10 +75,17 @@ const LocationForm = ({ onLocationAdded }) => {
     }
   };
 
+  /**
+   * Toggle visibility of manual coordinates input form
+   */
   const toggleCoordinatesForm = () => {
     setShowCoordinatesForm(!showCoordinatesForm);
   };
 
+  /**
+   * Handle form submission
+   * Validates data and sends API request to add new location
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -181,6 +212,13 @@ const LocationForm = ({ onLocationAdded }) => {
   );
 };
 
+/**
+ * Helper function to get address from coordinates using reverse geocoding API
+ * 
+ * @param {number} lat - Latitude
+ * @param {number} lng - Longitude
+ * @returns {string} - The formatted address or empty string on error
+ */
 const getAddressFromCoordinates = async (lat, lng) => {
   try {
     const response = await axios.post(

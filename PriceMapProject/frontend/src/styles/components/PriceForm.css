@@ -1,8 +1,21 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
+/**
+ * PriceForm Component Styles
+ * Form for adding product prices with responsive design
+ */
+
 .price-form {
   background-color: rgba(0, 0, 0, 0.5);
   padding: 20px;
   border-radius: 8px;
   margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .price-form h3 {
@@ -10,8 +23,10 @@
   color: #ffffff;
   font-size: 1.3rem;
   margin-bottom: 15px;
+  font-weight: 500;
 }
 
+/* Form controls */
 .form-group {
   margin-bottom: 15px;
 }
@@ -30,8 +45,15 @@
   border-radius: 4px;
   background-color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
+  transition: box-shadow 0.3s ease;
 }
 
+.form-group input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.4);
+}
+
+/* Submit button */
 .price-form button {
   background-color: #4caf50;
   color: white;
@@ -40,23 +62,31 @@
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
+  width: 100%;
 }
 
 .price-form button:hover {
   background-color: #388e3c;
+  transform: translateY(-1px);
+}
+
+.price-form button:active {
+  transform: translateY(0);
 }
 
 .price-form button:disabled {
   background-color: #7cb342;
   cursor: not-allowed;
   opacity: 0.7;
+  transform: none;
 }
 
 .price-form button.submitting {
   background-color: #7cb342;
 }
 
+/* Status messages */
 .error-message {
   background-color: rgba(231, 76, 60, 0.3);
   border-left: 4px solid #e74c3c;
@@ -80,4 +110,19 @@
   font-size: 0.8rem;
   color: #bdc3c7;
   font-style: italic;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .price-form {
+    padding: 15px;
+  }
+  
+  .form-group input {
+    font-size: 16px; /* Better for mobile input fields */
+  }
+  
+  .price-form button {
+    padding: 12px 15px; /* Larger touch target */
+  }
 } 

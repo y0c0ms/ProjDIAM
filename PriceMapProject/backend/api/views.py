@@ -1,3 +1,10 @@
+'''
+Code made by:
+- Manuel Santos nº 111087
+- Alexandre Mendes nº 111026
+- Vlad Ganta nº 110672
+'''
+
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, status, renderers
 from rest_framework.decorators import action, api_view, permission_classes
@@ -16,7 +23,6 @@ import requests
 
 # Create your views here.
 
-# Admin permission class
 class IsAdminUser(permissions.BasePermission):
     """
     Custom permission to only allow admin users to access the view.
@@ -42,50 +48,58 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         
-        # Write permissions are only allowed to the owner
-        if hasattr(obj, 'created_by'):
-            return obj.created_by == request.user
-        elif hasattr(obj, 'reported_by'):
-            return obj.reported_by == request.user
-        elif hasattr(obj, 'user'):
-            return obj.user == request.user
+        # Check for ownership attribute on the object
+        for attr in ['created_by', 'reported_by', 'user']:
+            if hasattr(obj, attr):
+                return getattr(obj, attr) == request.user
         return False
 
 class LocationViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing location data
+    Provides CRUD operations and custom actions for prices and comments
+    """
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Removed IsOwnerOrReadOnly to allow any logged-in user to add prices/comments
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_serializer_context(self):
         """
-        Pass request to serializer context so we can get the current user
+        Pass request to serializer context for current user access
         """
         context = super().get_serializer_context()
         context.update({'request': self.request})
         return context
     
     def perform_create(self, serializer):
-        # Try to get address from coordinates if not provided
+        """
+        Override create to automatically add address from coordinates and set the creator
+        """
         data = self.request.data
         address = data.get('address')
         latitude = data.get('latitude')
         longitude = data.get('longitude')
         
         if not address and latitude and longitude:
-            # Try to get address from coordinates using OpenStreetMap Nominatim API
+            # Get address from coordinates using geocoding
             address = self.get_address_from_coordinates(latitude, longitude)
         
         serializer.save(created_by=self.request.user, address=address)
     
     def get_address_from_coordinates(self, latitude, longitude):
         """
-        Uses OpenStreetMap's Nominatim API to get an address from coordinates
+        Uses OpenStreetMap's Nominatim API for reverse geocoding
+        
+        Args:
+            latitude (float): Location latitude
+            longitude (float): Location longitude
+            
+        Returns:
+            str: Human-readable address or None if geocoding fails
         """
         try:
             url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={latitude}&lon={longitude}&zoom=18&addressdetails=1"
-            headers = {
-                'User-Agent': 'PriceMapApp/1.0'  # Nominatim requires a user agent
-            }
+            headers = {'User-Agent': 'PriceMapApp/1.0'}  # Required by Nominatim
             response = requests.get(url, headers=headers)
             
             if response.status_code == 200:
@@ -100,7 +114,8 @@ class LocationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def get_address(self, request):
         """
-        Endpoint to get an address from latitude and longitude
+        Endpoint to get an address from latitude and longitude coordinates
+        Used by the frontend map interface when selecting locations
         """
         latitude = request.data.get('latitude')
         longitude = request.data.get('longitude')
@@ -124,14 +139,15 @@ class LocationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def add_price(self, request, pk=None):
         """
-        Add a new price for a product at this location.
-        If a price for this product already exists, it will be replaced.
+        Add a new price for a product at this location
+        
+        If a price for this product already exists, it will be replaced
+        per the price update policy (newer prices replace older ones)
         """
         location = self.get_object()
         serializer = PriceInfoSerializer(data=request.data)
         
         if serializer.is_valid():
-            # Get product name from validated data
             product_name = serializer.validated_data['product_name']
             
             # Delete existing prices for this product at this location
@@ -140,7 +156,6 @@ class LocationViewSet(viewsets.ModelViewSet):
                 product_name=product_name
             )
             
-            # Log deletion info for debugging
             if old_prices.exists():
                 print(f"Replacing {old_prices.count()} existing price(s) for '{product_name}' at {location.name}")
                 old_prices.delete()
@@ -155,19 +170,20 @@ class LocationViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def add_comment(self, request, pk=None):
+        """
+        Add a comment with rating to a location
+        
+        Rating is validated to ensure it's between 1-5 stars
+        """
         location = self.get_object()
         
-        # Get rating from request data with a default of 1
+        # Validate and normalize rating
         rating = request.data.get('rating', 1)
         try:
-            # Ensure rating is an integer between 1 and 5
-            rating = int(rating)
-            if rating < 1 or rating > 5:
-                rating = 1
+            rating = max(1, min(int(rating), 5))  # Ensure rating between 1-5
         except (ValueError, TypeError):
             rating = 1
             
-        # Create comment data with text and rating
         comment_data = {
             'text': request.data.get('text', ''),
             'rating': rating
@@ -180,13 +196,16 @@ class LocationViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=400)
 
 class PriceInfoViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing price information
+    """
     queryset = PriceInfo.objects.all()
     serializer_class = PriceInfoSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_serializer_context(self):
         """
-        Pass request to serializer context so we can get the current user
+        Pass request to serializer context for current user access
         """
         context = super().get_serializer_context()
         context.update({'request': self.request})
@@ -198,7 +217,10 @@ class PriceInfoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def validate(self, request, pk=None):
         """
-        Add or update a validation for a price
+        Add or update a price validation
+        
+        Implements the community validation system where users can mark
+        prices as accurate or inaccurate, helping ensure data quality
         """
         price = self.get_object()
         validation_type = request.data.get('validation_type')
@@ -221,6 +243,9 @@ class PriceInfoViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing location comments
+    """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -228,25 +253,29 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-# Décorateur para tornar todas as funções isentas de CSRF
 @method_decorator(csrf_exempt, name='dispatch')
 class UserRegistrationView(APIView):
+    """
+    API endpoint for user registration
+    Creates both user account and profile with token authentication
+    """
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        print(f"Registration request received: {request.data}")
-        print(f"Headers: {request.headers}")
+        """
+        Handle user registration with validation
         
+        Returns authentication token for immediate login
+        """
         try:
+            # Extract registration data
             username = request.data.get('username')
             email = request.data.get('email')
             password = request.data.get('password')
             first_name = request.data.get('first_name', '')
             last_name = request.data.get('last_name', '')
             
-            print(f"Parsed data - username: {username}, email: {email}, first_name: {first_name}, last_name: {last_name}")
-            
-            # Validate required fields
+            # Basic validation
             errors = {}
             if not username:
                 errors['username'] = ['Username is required']
@@ -260,189 +289,206 @@ class UserRegistrationView(APIView):
             if errors:
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
             
-            # Create user
-            try:    
-                user = User.objects.create_user(
-                    username=username,
-                    email=email,
-                    password=password,
-                    first_name=first_name,
-                    last_name=last_name
-                )
-                    
-                token, created = Token.objects.get_or_create(user=user)
+            # Create user and profile
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name
+            )
                 
-                # Create user profile
-                UserProfile.objects.create(user=user)
-                
-                return Response({
-                    'token': token.key,
-                    'user': {
-                        'id': user.id,
-                        'username': user.username,
-                        'email': user.email,
-                        'first_name': user.first_name,
-                        'last_name': user.last_name,
-                        'is_staff': user.is_staff
-                    }
-                }, status=status.HTTP_201_CREATED)
-            except Exception as create_error:
-                print(f"Error creating user: {str(create_error)}")
-                return Response({'error': str(create_error)}, status=status.HTTP_400_BAD_REQUEST)
+            token, _ = Token.objects.get_or_create(user=user)
+            
+            # Create user profile
+            UserProfile.objects.create(user=user)
+            
+            return Response({
+                'token': token.key,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'is_staff': user.is_staff
+                }
+            }, status=status.HTTP_201_CREATED)
             
         except Exception as e:
-            print(f"Registration error: {str(e)}")
-            import traceback
-            traceback.print_exc()
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserLoginView(APIView):
+    """
+    API endpoint for user login
+    Handles authentication and returns tokens
+    """
     permission_classes = [permissions.AllowAny]
     renderer_classes = [renderers.JSONRenderer]  # Force JSON responses only
 
     def post(self, request):
-        print(f"Login request received: {request.data}")
-        print(f"Login Headers: {request.headers}")
-        print(f"Content-Type: {request.content_type}")
-        
+        """
+        Handle user login with multiple request format support
+        """
         try:
-            # Ensure we're getting data from the request properly
-            if hasattr(request, 'data'):
-                data = request.data
-            else:
-                # Fallback for when DRF doesn't parse the data correctly
-                data = json.loads(request.body.decode('utf-8'))
-                
+            # Extract login data with flexible request format handling
+            data = request.data if hasattr(request, 'data') else json.loads(request.body.decode('utf-8'))
             username = data.get('username')
             password = data.get('password')
             
-            print(f"Login attempt for username: {username}")
-            
             if not username or not password:
-                print(f"Missing username or password in request")
                 return Response(
                     {'error': 'Username and password are required'}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
+            # Authenticate user
             user = authenticate(username=username, password=password)
             
             if not user:
-                print(f"Authentication failed for username: {username}")
                 return Response(
                     {'error': 'Invalid credentials'}, 
                     status=status.HTTP_401_UNAUTHORIZED
                 )
             
-            print(f"Authentication successful for username: {username}")
-            token, created = Token.objects.get_or_create(user=user)
-            print(f"Token for {username}: {token.key}")
+            # Get or create auth token
+            token, _ = Token.objects.get_or_create(user=user)
             
-            # Get or create profile if it doesn't exist
-            profile, created = UserProfile.objects.get_or_create(user=user)
+            # Get or create user profile
+            profile, _ = UserProfile.objects.get_or_create(user=user)
             
-            user_data = {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'is_staff': user.is_staff
-            }
-            
-            print(f"Returning user data and token to client")
-            response_data = {
+            # Return user data and token
+            return Response({
                 'token': token.key,
-                'user': user_data
-            }
-            print(f"Response data: {response_data}")
-            return Response(response_data)
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'is_staff': user.is_staff
+                }
+            })
             
         except Exception as e:
-            print(f"Login error: {str(e)}")
-            import traceback
-            traceback.print_exc()
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserProfileView(APIView):
+    """
+    API endpoint for user profile management
+    """
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
+        """
+        Get the authenticated user's profile
+        """
         user = request.user
         serializer = UserSerializer(user)
-        return Response(serializer.data)
-    
+        
+        # Get additional profile fields
+        profile = UserProfile.objects.get(user=user)
+        profile_serializer = UserProfileSerializer(profile)
+        
+        # Combine profile and user data
+        data = serializer.data
+        data.update(profile_serializer.data)
+        
+        return Response(data)
+        
     def put(self, request):
+        """
+        Update the authenticated user's profile
+        Handles both User model fields and UserProfile fields
+        """
         user = request.user
+        profile = UserProfile.objects.get(user=user)
         
-        # Update user data
-        user_data = {
-            'first_name': request.data.get('first_name', user.first_name),
-            'last_name': request.data.get('last_name', user.last_name),
-            'email': request.data.get('email', user.email)
-        }
+        # Update User model fields
+        user_data = {}
+        for field in ['first_name', 'last_name', 'email']:
+            if field in request.data:
+                user_data[field] = request.data[field]
+                
+        if user_data:
+            user_serializer = UserSerializer(user, data=user_data, partial=True)
+            if user_serializer.is_valid():
+                user_serializer.save()
+            else:
+                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        user_serializer = UserSerializer(user, data=user_data, partial=True)
-        if user_serializer.is_valid():
-            user_serializer.save()
-            
-            # Get or create user profile
-            profile, created = UserProfile.objects.get_or_create(user=user)
-            
-            # Update profile data
-            profile_data = {
-                'bio': request.data.get('bio', profile.bio),
-                'phone': request.data.get('phone', profile.phone)
-            }
-            
-            # Handle profile image upload
-            if 'profile_image' in request.FILES:
-                profile_data['profile_image'] = request.FILES['profile_image']
-            
+        # Update profile fields
+        profile_data = {}
+        for field in ['bio', 'avatar']:
+            if field in request.data:
+                profile_data[field] = request.data[field]
+                
+        if profile_data:
             profile_serializer = UserProfileSerializer(profile, data=profile_data, partial=True)
             if profile_serializer.is_valid():
                 profile_serializer.save()
-                
-                # Return combined user and profile data
-                return Response(UserSerializer(user).data)
             else:
                 return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Return the updated data
+        combined_serializer = UserSerializer(user)
+        profile_serializer = UserProfileSerializer(profile)
+        
+        data = combined_serializer.data
+        data.update(profile_serializer.data)
+        
+        return Response(data)
 
-# User management viewset for admins
 class UserViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for admin user management
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminUser]
     
     def get_queryset(self):
-        # Filter out superusers from the list to prevent accidental deletion
+        """
+        Limit users list to non-superusers for safety
+        """
+        # Exclude superusers from the list for safety
         return User.objects.filter(is_superuser=False)
     
     def destroy(self, request, *args, **kwargs):
+        """
+        Safely delete users, preventing self-deletion
+        """
         user = self.get_object()
+        
         # Prevent admins from deleting themselves
         if user == request.user:
             return Response(
-                {"error": "You cannot delete your own account"},
+                {'error': 'You cannot delete your own account'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
         return super().destroy(request, *args, **kwargs)
     
     @action(detail=True, methods=['post'])
     def toggle_admin(self, request, pk=None):
+        """
+        Toggle staff status for a user
+        """
         user = self.get_object()
-        # Prevent admins from removing their own admin status
+        
+        # Prevent toggling your own admin status
         if user == request.user:
             return Response(
-                {"error": "You cannot change your own admin status"},
+                {'error': 'You cannot change your own admin status'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Toggle is_staff
         user.is_staff = not user.is_staff
         user.save()
-        return Response({"status": "success", "is_admin": user.is_staff})
+        
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)

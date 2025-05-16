@@ -1,111 +1,203 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';
 import badWordsService from '../services/badWordsService';
 import config from '../services/config';
+import StarRating from './StarRating';
 
+/**
+ * CommentForm component for adding comments and ratings to locations
+ * Features:
+ * - Star rating selection (1-5 stars)
+ * - Profanity filtering with preview before posting
+ * - Error handling and validation
+ *
+ * @param {number} locationId - The ID of the location being commented on
+ * @param {Function} onCommentAdded - Callback function triggered when a comment is successfully added
+ */
 const CommentForm = ({ locationId, onCommentAdded }) => {
-  const [text, setText] = useState('');
-  const [rating, setRating] = useState(1);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [previewText, setPreviewText] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
+  const [formState, setFormState] = useState({
+    text: '',
+    rating: 1,
+    previewText: '',
+    showPreview: false,
+    isProcessing: false,
+    error: '',
+    success: ''
+  });
 
+  /**
+   * Update a single form state property
+   */
+  const updateFormState = (field, value) => {
+    setFormState(prev => ({ ...prev, [field]: value }));
+  };
+
+  /**
+   * Reset form to initial state
+   */
+  const resetForm = () => {
+    setFormState({
+      text: '',
+      rating: 1,
+      previewText: '',
+      showPreview: false,
+      isProcessing: false,
+      error: '',
+      success: ''
+    });
+  };
+
+  /**
+   * Handle changes to the comment text
+   */
   const handleChange = (e) => {
-    setText(e.target.value);
-    setError('');
-    setSuccess('');
-    setShowPreview(false);
+    setFormState(prev => ({
+      ...prev,
+      text: e.target.value,
+      error: '',
+      success: '',
+      showPreview: false
+    }));
   };
 
+  /**
+   * Handle changes to the star rating
+   */
   const handleRatingChange = (e) => {
-    setRating(parseInt(e.target.value));
+    updateFormState('rating', parseInt(e.target.value));
   };
 
-  // Check for profanity and show preview if found
-  const previewComment = () => {
-    if (!text.trim()) {
-      setError('Comment cannot be empty');
+  // Destructure state for easier access
+  const { 
+    text, 
+    rating, 
+    previewText, 
+    showPreview, 
+    isProcessing, 
+    error, 
+    success 
+  } = formState;
+
+  /**
+   * Check for profanity in comment and show preview if found
+   */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!authService.isLoggedIn()) {
+      updateFormState('error', 'You must be logged in to post a comment.');
       return;
     }
 
+    if (!text.trim()) {
+      updateFormState('error', 'Comment text cannot be empty.');
+      return;
+    }
+
+    updateFormState('isProcessing', true);
+
     try {
-      setIsProcessing(true);
-      
-      // Use the synchronous client-side profanity filter
-      const result = badWordsService.checkProfanity(text);
-      
-      if (result.bad_words_total > 0) {
-        console.log(`Profanity detected: ${result.bad_words_list.join(', ')}`);
-        // Generate censored version
-        const censored = badWordsService.censorProfanity(text);
-        setPreviewText(censored);
-        setShowPreview(true);
+      // Check for profanity
+      const profanityCheck = badWordsService.checkProfanity(text);
+
+      if (profanityCheck.bad_words_total > 0) {
+        // Profanity detected, show censored preview
+        const censoredText = badWordsService.censorProfanity(text);
+        setFormState(prev => ({
+          ...prev,
+          previewText: censoredText,
+          showPreview: true,
+          isProcessing: false
+        }));
       } else {
         // No profanity, submit directly
         submitComment(text);
       }
-    } catch (error) {
-      console.error('Error checking comment:', error);
-      setError('Error processing your comment. Please try again.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Submit the final comment (original or censored)
-  const submitComment = async (contentToSubmit) => {
-    try {
-      if (!authService.isLoggedIn()) {
-        setError('You must be logged in to add a comment');
-        return;
-      }
-
-      setIsProcessing(true);
-      setError('');
-      
-      const response = await axios.post(
-        `${config.apiUrl}/locations/${locationId}/add_comment/`, 
-        { text: contentToSubmit, rating }
-      );
-
-      setSuccess('Comment added successfully!');
-      setText('');
-      setRating(1);
-      setPreviewText('');
-      setShowPreview(false);
-
-      // Call the callback to update the parent component
-      if (onCommentAdded) {
-        onCommentAdded(response.data);
-      }
     } catch (err) {
-      console.error('Error adding comment:', err);
-      if (err.response?.status === 400) {
-        setError('Invalid comment data. Please check your input.');
-      } else if (err.response?.status === 401) {
-        setError('You must be logged in to add a comment.');
-      } else if (err.response?.status === 404) {
-        setError('Location not found. Please refresh the page and try again.');
-      } else {
-        setError('Failed to add comment. Please check your connection and try again later.');
-      }
-    } finally {
-      setIsProcessing(false);
+      console.error('Error checking profanity:', err);
+      // If profanity check fails, just continue with the original text
+      submitComment(text);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    previewComment();
-  };
-
+  /**
+   * Confirm after seeing preview and submit censored comment
+   */
   const confirmAndSubmit = () => {
     submitComment(previewText);
+  };
+
+  /**
+   * Submit the comment to the API
+   */
+  const submitComment = async (commentText) => {
+    updateFormState('isProcessing', true);
+    
+    try {
+      // Get token from localStorage directly
+      const token = localStorage.getItem('token');
+      
+      await axios.post(
+        `${config.apiUrl}/comments/`, 
+        {
+          location: locationId,
+          text: commentText,
+          rating
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`
+          }
+        }
+      );
+      
+      setFormState(prev => ({
+        ...prev,
+        isProcessing: false,
+        success: 'Comment posted successfully!',
+        showPreview: false
+      }));
+      
+      resetForm();
+      
+      // Notify parent component
+      if (onCommentAdded) {
+        onCommentAdded();
+      }
+    } catch (err) {
+      console.error('Error posting comment:', err);
+      let errorMsg = 'Failed to post comment.';
+      
+      if (err.response?.data) {
+        // Try to get more specific error message from the API
+        const responseData = err.response.data;
+        if (typeof responseData === 'string') {
+          errorMsg = responseData;
+        } else if (typeof responseData === 'object') {
+          // Find the first error message in the object
+          const firstError = Object.values(responseData)[0];
+          if (Array.isArray(firstError) && firstError.length > 0) {
+            errorMsg = firstError[0];
+          }
+        }
+      }
+      
+      setFormState(prev => ({
+        ...prev,
+        isProcessing: false,
+        error: errorMsg,
+        showPreview: false
+      }));
+    }
   };
 
   return (
@@ -127,7 +219,7 @@ const CommentForm = ({ locationId, onCommentAdded }) => {
               Submit Comment
             </button>
             <button 
-              onClick={() => setShowPreview(false)}
+              onClick={() => updateFormState('showPreview', false)}
               className="cancel-btn secondary"
             >
               Edit Comment
@@ -136,57 +228,7 @@ const CommentForm = ({ locationId, onCommentAdded }) => {
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
-          <div className="star-rating">
-            <input 
-              type="radio" 
-              id="star5" 
-              name="rating" 
-              value="5" 
-              checked={rating === 5} 
-              onChange={handleRatingChange} 
-            />
-            <label htmlFor="star5" title="5 stars"></label>
-            
-            <input 
-              type="radio" 
-              id="star4" 
-              name="rating" 
-              value="4" 
-              checked={rating === 4} 
-              onChange={handleRatingChange} 
-            />
-            <label htmlFor="star4" title="4 stars"></label>
-            
-            <input 
-              type="radio" 
-              id="star3" 
-              name="rating" 
-              value="3" 
-              checked={rating === 3} 
-              onChange={handleRatingChange} 
-            />
-            <label htmlFor="star3" title="3 stars"></label>
-            
-            <input 
-              type="radio" 
-              id="star2" 
-              name="rating" 
-              value="2" 
-              checked={rating === 2} 
-              onChange={handleRatingChange} 
-            />
-            <label htmlFor="star2" title="2 stars"></label>
-            
-            <input 
-              type="radio" 
-              id="star1" 
-              name="rating" 
-              value="1" 
-              checked={rating === 1} 
-              onChange={handleRatingChange} 
-            />
-            <label htmlFor="star1" title="1 star"></label>
-          </div>
+          <StarRating value={rating} onChange={handleRatingChange} />
           
           <div>
             <textarea

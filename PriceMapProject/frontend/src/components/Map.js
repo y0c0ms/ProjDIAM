@@ -1,5 +1,12 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
@@ -7,7 +14,10 @@ import { Link } from 'react-router-dom';
 import authService from '../services/authService';
 import '../styles/components/Map.css';
 
-// Fix Leaflet icon issue
+/**
+ * Fix for Leaflet's icon loading issue in React applications
+ * Leaflet relies on a specific file structure for its icons that gets disrupted during bundling
+ */
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
@@ -18,9 +28,10 @@ L.Icon.Default.mergeOptions({
 // API URL
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
-// Custom dark style for Leaflet popups
+/**
+ * Adds dark theme styles to Leaflet popups
+ */
 const addCustomPopupStyles = () => {
-  // Add custom popup styles
   const style = document.createElement('style');
   style.textContent = `
     .leaflet-popup-content-wrapper {
@@ -41,17 +52,36 @@ const addCustomPopupStyles = () => {
   document.head.appendChild(style);
 };
 
-// Component to handle map clicks
+/**
+ * Component to get reference to the Leaflet map
+ */
+function MapRefSetter({ mapRef }) {
+  const map = useMap();
+  useEffect(() => {
+    mapRef.current = map;
+  }, [map, mapRef]);
+  return null;
+}
+
+/**
+ * Handles map click events with throttling to prevent multiple rapid clicks
+ * 
+ * @param {Function} onLocationSelect - Callback for when user selects a map location
+ * @param {Object} mapRef - Reference to the Leaflet map instance
+ */
 function MapClickHandler({ onLocationSelect, mapRef }) {
   const [isClickable, setIsClickable] = useState(true);
   
-  const map = useMapEvents({
+  useMapEvents({
     click: (e) => {
       if (!isClickable) return;
       
       const { lat, lng } = e.latlng;
+      const map = mapRef.current;
       
-      // Save current zoom level
+      // Safety check to prevent null reference error
+      if (!map) return;
+      
       const currentZoom = map.getZoom();
       
       // Call the location select callback
@@ -60,48 +90,55 @@ function MapClickHandler({ onLocationSelect, mapRef }) {
       // Use setTimeout to ensure this runs after state updates
       setTimeout(() => {
         // Restore the zoom level
-        if (map && mapRef.current === map) {
-          map.setView([lat, lng], currentZoom, {
-            animate: true,
-            duration: 0.5
-          });
+        if (map) {
+          map.setView([lat, lng], currentZoom, { animate: true, duration: 0.5 });
         }
       }, 50);
       
-      // Temporarily disable clicking to prevent multiple rapid clicks
+      // Throttle clicks to prevent multiple rapid selections
       setIsClickable(false);
-      setTimeout(() => {
-        setIsClickable(true);
-      }, 500); // Re-enable after 500ms
+      setTimeout(() => setIsClickable(true), 500);
     }
   });
   return null;
 }
 
+/**
+ * Interactive map component that displays locations with markers
+ * 
+ * @param {Array} locations - Optional array of locations to display
+ * @param {Function} onLocationAdded - Callback when a new location is added
+ * @param {Function} onLocationSelect - Callback when a location is selected on the map
+ * @param {Object} selectedPosition - Current selected position (lat, lng) for highlighting
+ */
 const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, selectedPosition }) => {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const mapRef = useRef(null);
   
-  // Only fetch locations once on initial mount
+  /**
+   * Initial setup and location data fetching
+   */
   useEffect(() => {
     // Add custom styles for popups
     addCustomPopupStyles();
     
-    // If locations are passed as props and are not empty, use those instead of fetching
+    // If locations are passed as props, use those instead of fetching
     if (propLocations && propLocations.length > 0) {
       setLocations(propLocations);
       setLoading(false);
       return;
     }
 
+    /**
+     * Fetches locations from the API with error handling and fallback test data
+     */
     const fetchLocations = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // Use axios with explicit configurations
         const response = await axios({
           method: 'get',
           url: `${API_BASE_URL}/locations/`,
@@ -112,50 +149,43 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
           timeout: 10000, // 10 seconds timeout
         });
         
-        console.log('Locations fetched:', response.data);
-        
         if (Array.isArray(response.data)) {
           setLocations(response.data);
         } else {
           console.error('Unexpected response format:', response.data);
           setError('Unexpected response format from server');
         }
-        
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching locations:', err);
         setError(`Failed to fetch location data: ${err.message}`);
-        setLoading(false);
         
         // Add test location data for development
         if (process.env.NODE_ENV === 'development') {
           console.log('Using test data for development');
-          const testLocations = [
-            {
-              id: 1,
-              name: "Café Central (Test)",
-              latitude: 38.736946,
-              longitude: -9.142685,
-              address: "Praça do Comércio, Lisboa",
-              prices: [
-                { id: 1, product_name: "Coffee", price: 1.20 },
-                { id: 2, product_name: "Pastel de Nata", price: 1.50 }
-              ],
-              comments: [
-                { id: 1, user: { username: "testuser" }, text: "Great place with friendly staff and reasonable prices!" }
-              ]
-            }
-          ];
-          setLocations(testLocations);
+          setLocations([{
+            id: 1,
+            name: "Café Central (Test)",
+            latitude: 38.736946,
+            longitude: -9.142685,
+            address: "Praça do Comércio, Lisboa",
+            prices: [
+              { id: 1, product_name: "Coffee", price: 1.20 },
+              { id: 2, product_name: "Pastel de Nata", price: 1.50 }
+            ],
+            comments: [
+              { id: 1, user: { username: "testuser" }, text: "Great place with friendly staff and reasonable prices!" }
+            ]
+          }]);
         }
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchLocations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);  // Only run on mount
   
-  // Update locations when propLocations changes, but only if it's different
+  // Update locations when propLocations changes
   useEffect(() => {
     if (propLocations && JSON.stringify(propLocations) !== JSON.stringify(locations)) {
       setLocations(propLocations);
@@ -165,7 +195,6 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
   // Update marker position when selectedPosition changes
   useEffect(() => {
     if (selectedPosition && mapRef.current) {
-      // Don't change the zoom level, just pan to the new position
       const map = mapRef.current;
       const currentZoom = map.getZoom();
       
@@ -184,10 +213,9 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
         center={[38.736946, -9.142685]} // Lisbon coordinates
         zoom={13} 
         style={{ height: '100%', width: '100%' }}
-        whenCreated={(map) => {
-          mapRef.current = map;
-        }}
+        ref={mapRef}
       >
+        <MapRefSetter mapRef={mapRef} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -205,7 +233,7 @@ const Map = ({ locations: propLocations, onLocationAdded, onLocationSelect, sele
         {selectedPosition && (
           <Marker 
             position={[selectedPosition.lat, selectedPosition.lng]}
-            key="selected-position" // Force a new instance when position changes
+            key="selected-position"
           >
             <Popup>
               <div>

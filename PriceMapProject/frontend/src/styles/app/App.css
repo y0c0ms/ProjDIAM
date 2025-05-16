@@ -1,4 +1,16 @@
-/* General styles */
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
+/**
+ * Main Application Styles
+ * Core styles for the entire application with responsive design
+ */
+
+/* Base Styles */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -18,6 +30,7 @@ body {
   position: relative;
 }
 
+/* App Layout */
 .App {
   display: flex;
   flex-direction: column;
@@ -34,59 +47,7 @@ body {
   flex: 1;
 }
 
-/* Navbar - Smaller and transparent */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 20px;
-  background-color: transparent;
-  color: #fff;
-  box-shadow: none;
-  z-index: 10;
-  position: relative;
-}
-
-.navbar-brand a {
-  color: #fff;
-  font-size: 1.2rem;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.navbar-menu {
-  display: flex;
-  align-items: center;
-}
-
-.navbar-item {
-  margin-left: 15px;
-  color: #ecf0f1;
-  text-decoration: none;
-  font-size: 0.95rem;
-}
-
-.navbar-item:hover {
-  color: #3498db;
-}
-
-.user-info {
-  font-weight: bold;
-}
-
-.logout-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.95rem;
-  color: #ecf0f1;
-}
-
-.logout-btn:hover {
-  color: #e74c3c;
-}
-
-/* Forms */
+/* Form Elements */
 .form-group {
   margin-bottom: 15px;
 }
@@ -109,7 +70,7 @@ body {
   color: #fff;
 }
 
-/* Buttons - No overlay */
+/* Buttons */
 button {
   padding: 10px 15px;
   background-color: rgba(52, 152, 219, 0.8);
@@ -118,19 +79,22 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
   backdrop-filter: blur(5px);
 }
 
 button:hover {
   background-color: rgba(41, 128, 185, 0.9);
+  transform: translateY(-1px);
 }
 
 button:disabled {
   background-color: rgba(189, 195, 199, 0.6);
   cursor: not-allowed;
+  transform: none;
 }
 
+/* Status Messages */
 .error-message, .error {
   color: #e74c3c;
   margin-bottom: 15px;
@@ -145,6 +109,209 @@ button:disabled {
   padding: 10px;
   background-color: rgba(213, 245, 227, 0.4);
   border-radius: 4px;
+}
+
+/* Video Background */
+.video-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.video-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translateX(-50%) translateY(-50%);
+  object-fit: cover;
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Authentication Pages */
+.login-page, .register-page, .profile-page {
+  max-width: 500px;
+  margin: 40px auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  color: #fff;
+  backdrop-filter: blur(5px);
+}
+
+.login-page h2, .register-page h2, .profile-page h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #ecf0f1;
+}
+
+.form-footer {
+  margin-top: 20px;
+  text-align: center;
+  color: #bdc3c7;
+}
+
+.form-footer a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+.form-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Location Detail Page */
+.location-detail-page h1 {
+  margin-bottom: 10px;
+  color: #fff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: #3498db;
+  text-decoration: none;
+}
+
+.location-address {
+  font-style: italic;
+  color: #ecf0f1;
+  margin-bottom: 10px;
+}
+
+.location-coordinates {
+  color: #bdc3c7;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.location-details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+/* Price and Comment Components */
+.prices-section, .comments-section {
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  backdrop-filter: blur(5px);
+}
+
+.price-list, .comment-list {
+  list-style: none;
+}
+
+.price-item, .comment-item {
+  padding: 15px;
+  border-bottom: 1px solid rgba(52, 73, 94, 0.5);
+}
+
+.price-item:last-child, .comment-item:last-child {
+  border-bottom: none;
+}
+
+.product-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+  display: block;
+}
+
+.price-value {
+  color: #e74c3c;
+  font-weight: bold;
+  font-size: 1.2rem;
+  display: block;
+}
+
+.price-date {
+  font-size: 0.9rem;
+  color: #bdc3c7;
+  display: block;
+  margin-top: 5px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.comment-author {
+  font-weight: bold;
+  color: #3498db;
+}
+
+.comment-date {
+  font-size: 0.9rem;
+  color: #bdc3c7;
+}
+
+.comment-text {
+  line-height: 1.5;
+}
+
+/* Loading States */
+.loading-indicator {
+  text-align: center;
+  padding: 10px;
+  color: #3498db;
+}
+
+/* Responsive Adjustments */
+@media (min-width: 768px) {
+  .location-details {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  button {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  .login-page, .register-page, .profile-page {
+    margin: 20px auto;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .login-page h2, .register-page h2, .profile-page h2 {
+    font-size: 1.4rem;
+  }
+  
+  .product-name, .price-value {
+    font-size: 1rem;
+  }
 }
 
 /* Map */
@@ -213,266 +380,7 @@ button:disabled {
   backdrop-filter: blur(5px);
 }
 
-/* Location Detail */
-.location-detail-page h1 {
-  margin-bottom: 10px;
-  color: #fff;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-.back-link {
-  display: inline-block;
-  margin-bottom: 20px;
-  color: #3498db;
-  text-decoration: none;
-}
-
-.location-address {
-  font-style: italic;
-  color: #ecf0f1;
-  margin-bottom: 10px;
-}
-
-.location-coordinates {
-  color: #bdc3c7;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
-}
-
-.location-details {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-}
-
-@media (min-width: 768px) {
-  .location-details {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.prices-section, .comments-section {
-  background-color: rgba(0, 0, 0, 0.6);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  backdrop-filter: blur(5px);
-}
-
-.price-list, .comment-list {
-  list-style: none;
-}
-
-.price-item, .comment-item {
-  padding: 15px;
-  border-bottom: 1px solid rgba(52, 73, 94, 0.5);
-}
-
-.price-item:last-child, .comment-item:last-child {
-  border-bottom: none;
-}
-
-.product-name {
-  font-weight: bold;
-  font-size: 1.1rem;
-  display: block;
-}
-
-.price-value {
-  color: #e74c3c;
-  font-weight: bold;
-  font-size: 1.2rem;
-  display: block;
-}
-
-.price-date {
-  font-size: 0.9rem;
-  color: #bdc3c7;
-  display: block;
-  margin-top: 5px;
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.comment-author {
-  font-weight: bold;
-  color: #3498db;
-}
-
-.comment-date {
-  font-size: 0.9rem;
-  color: #bdc3c7;
-}
-
-.comment-text {
-  line-height: 1.5;
-}
-
-/* Login, Register, and Profile Pages - consistent styling */
-.login-page, .register-page, .profile-page {
-  max-width: 500px;
-  margin: 40px auto;
-  background-color: rgba(0, 0, 0, 0.6);
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  color: #fff;
-  backdrop-filter: blur(5px);
-}
-
-.login-page h2, .register-page h2, .profile-page h2 {
-  margin-bottom: 20px;
-  text-align: center;
-  color: #ecf0f1;
-}
-
-.form-footer {
-  margin-top: 20px;
-  text-align: center;
-  color: #bdc3c7;
-}
-
-.form-footer a {
-  color: #3498db;
-  text-decoration: none;
-}
-
-.form-footer a:hover {
-  text-decoration: underline;
-}
-
-/* Video Background Styles */
-.video-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  overflow: hidden;
-}
-
-.video-bg {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  transform: translateX(-50%) translateY(-50%);
-  object-fit: cover;
-}
-
-.video-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity as needed */
-}
-
-/* Add these styles for the new location form */
-.location-form {
-  margin: 20px auto;
-  padding: 20px;
-  background-color: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
-  backdrop-filter: blur(5px);
-}
-
-.instruction-text {
-  margin-bottom: 15px;
-  font-style: italic;
-  color: #bdc3c7;
-}
-
-.form-control {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  font-size: 16px;
-  background-color: rgba(0, 0, 0, 0.4);
-  color: #fff;
-}
-
-.submit-button {
-  background-color: rgba(76, 175, 80, 0.8);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-  }
-
-.submit-button:hover {
-  background-color: rgba(69, 160, 73, 0.9);
-}
-
-.submit-button:disabled {
-  background-color: rgba(120, 144, 156, 0.6);
-  cursor: not-allowed;
-}
-
-.toggle-form-btn {
-  background-color: rgba(33, 150, 243, 0.8);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-}
-
-.toggle-form-btn:hover {
-  background-color: rgba(11, 125, 218, 0.9);
-}
-
-.error-message {
-  color: #f44336;
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: rgba(255, 235, 238, 0.3);
-  border-radius: 4px;
-}
-
-.success-message {
-  color: #4caf50;
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: rgba(232, 245, 233, 0.3);
-  border-radius: 4px;
-}
-
-.loading-indicator {
-  font-size: 14px;
-  color: #bdc3c7;
-  margin-top: 5px;
-}
-
-.login-prompt {
-  text-align: center;
-  color: #ecf0f1;
-  background-color: transparent;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px auto;
-  max-width: 500px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-/* Add these styles for map loading and error states */
+/* Map loading and error states */
 .map-loading, .map-error {
   height: 70vh;
   display: flex;
@@ -489,56 +397,7 @@ button:disabled {
   color: #f44336;
 }
 
-/* Star Rating Styles */
-.star-rating {
-  display: flex;
-  flex-direction: row-reverse;
-  margin-bottom: 15px;
-}
-
-.star-rating input {
-  display: none;
-}
-
-.star-rating label {
-  cursor: pointer;
-  width: 25px;
-  height: 25px;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 24 24'%3e%3cpath d='M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z' fill='white' stroke='white' stroke-width='0.5'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-}
-
-.star-rating input:checked ~ label {
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 24 24'%3e%3cpath d='M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z' fill='%23f5c518' stroke='%23f5c518' stroke-width='0.5'/%3e%3c/svg%3e");
-}
-
-.star-rating label:hover,
-.star-rating label:hover ~ label {
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 24 24'%3e%3cpath d='M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z' fill='%23f5c518' stroke='%23f5c518' stroke-width='0.5'/%3e%3c/svg%3e");
-}
-
-.star-display {
-  display: flex;
-  margin-bottom: 10px;
-}
-
-.star-display .star {
-  width: 18px;
-  height: 18px;
-  margin-right: 2px;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3e%3cpath d='M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z' fill='white' stroke='white' stroke-width='0.5'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-}
-
-.star-display .star.filled {
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3e%3cpath d='M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z' fill='%23f5c518' stroke='%23f5c518' stroke-width='0.5'/%3e%3c/svg%3e");
-  }
-
-/* Fix for form inputs in dark theme across the application */
+/* Form inputs in dark theme */
 input[type="text"], 
 input[type="email"], 
 input[type="password"], 
@@ -555,7 +414,7 @@ textarea::placeholder {
   color: rgba(255, 255, 255, 0.5) !important;
 }
 
-/* Add styles for profanity warning and censored comments */
+/* Profanity warning and censored comments */
 .warning-message {
   background-color: rgba(243, 156, 18, 0.2);
   border: 1px solid rgba(243, 156, 18, 0.5);
@@ -604,4 +463,15 @@ textarea::placeholder {
 
 .edit-comment-btn:hover {
   background-color: rgba(192, 57, 43, 0.9);
+}
+
+.login-prompt {
+  text-align: center;
+  color: #ecf0f1;
+  background-color: transparent;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 500px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }

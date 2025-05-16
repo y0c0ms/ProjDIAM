@@ -1,14 +1,35 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import '../styles/components/Navbar.css';
 
+/**
+ * Navbar component that provides site-wide navigation
+ * Features:
+ * - Displays different links based on authentication state
+ * - Shows admin link for admin users
+ * - Username links to profile page
+ * - Handles logout functionality
+ * 
+ * @returns {JSX.Element} The navigation bar component
+ */
 const Navbar = () => {
   const navigate = useNavigate();
   const isLoggedIn = authService.isLoggedIn();
   const user = authService.getCurrentUser();
   const isAdmin = authService.isAdmin();
 
+  /**
+   * Handles user logout
+   * Clears authentication state and redirects to login page
+   */
   const handleLogout = () => {
     authService.logout();
     navigate('/login');

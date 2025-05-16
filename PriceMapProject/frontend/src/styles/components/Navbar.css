@@ -1,12 +1,23 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
+/**
+ * Navbar Component Styles
+ * Responsive navigation bar with transparent styling for video background visibility
+ */
+
 .navbar {
-  background-color: rgba(44, 62, 80, 0.9);
+  background-color: transparent;
   color: #fff;
-  padding: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  position: sticky;
+  padding: 8px 20px;
+  box-shadow: none;
+  position: relative;
   top: 0;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
+  z-index: 10;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -17,7 +28,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 70px;
+  height: 60px;
 }
 
 .navbar-brand {
@@ -83,8 +94,9 @@
 }
 
 .user-greeting {
-  color: #bdc3c7;
+  color: #ecf0f1;
   font-weight: 500;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .user-greeting:hover {
@@ -93,13 +105,12 @@
 
 .admin-link {
   color: #e74c3c;
-  
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .admin-link:hover {
   color: #fff;
   background-color: rgba(231, 76, 60, 0.2);
-  border-color: rgba(231, 76, 60, 0.5);
 }
 
 .logout-btn {
@@ -115,30 +126,57 @@
   align-items: center;
   gap: 8px;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .logout-btn:hover {
   color: #fff;
   background-color: rgba(231, 76, 60, 0.2);
-  border-color: rgba(231, 76, 60, 0.5);
+  border-color: rgba(231, 76, 60, 0.7);
 }
 
+/* Tablet responsive styles */
 @media (max-width: 768px) {
   .navbar-container {
-    flex-direction: column;
-    height: auto;
-    padding: 20px;
+    padding: 0 15px;
   }
   
   .navbar-menu {
-    margin-top: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
+    gap: 10px;
   }
   
   .navbar-item, .logout-btn {
-    margin: 5px;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile responsive styles */
+@media (max-width: 640px) {
+  .navbar-container {
+    flex-direction: column;
+    height: auto;
+    padding: 15px;
+  }
+  
+  .navbar-brand {
+    margin-bottom: 15px;
+  }
+  
+  .navbar-menu {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .navbar-item, .logout-btn {
+    margin: 3px;
+    padding: 6px 10px;
+    font-size: 14px;
+    border-radius: 4px;
+  }
+  
+  .navbar-item::after {
+    display: none;
   }
 } 

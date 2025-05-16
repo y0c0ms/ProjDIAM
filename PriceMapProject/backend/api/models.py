@@ -1,8 +1,19 @@
+'''
+Code made by:
+- Manuel Santos nº 111087
+- Alexandre Mendes nº 111026
+- Vlad Ganta nº 110672
+'''
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class UserProfile(models.Model):
+    """
+    Extended user profile model that contains additional user information
+    Links one-to-one with Django's built-in User model
+    """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
     bio = models.TextField(blank=True, null=True)
@@ -12,6 +23,10 @@ class UserProfile(models.Model):
         return f"Profile for {self.user.username}"
 
 class Location(models.Model):
+    """
+    Represents a physical location where prices can be reported
+    Contains geographical coordinates and address information
+    """
     name = models.CharField(max_length=255)
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -24,6 +39,11 @@ class Location(models.Model):
         return self.name
     
 class PriceInfo(models.Model):
+    """
+    Stores product prices at specific locations
+    Each entry represents a product's price at a particular location
+    Prices can be validated by users to confirm accuracy
+    """
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='prices')
     product_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -34,6 +54,11 @@ class PriceInfo(models.Model):
         return f"{self.product_name} - {self.price} at {self.location.name}"
 
 class PriceValidation(models.Model):
+    """
+    Tracks user validations of reported prices
+    Users can mark prices as accurate or inaccurate
+    Each user can have only one validation per price (enforced by unique_together)
+    """
     ACCURATE = 'accurate'
     INACCURATE = 'inaccurate'
     
@@ -55,6 +80,10 @@ class PriceValidation(models.Model):
         return f"{self.get_validation_type_display()} validation by {self.user.username} for {self.price}"
 
 class Comment(models.Model):
+    """
+    Stores user comments and ratings for locations
+    Each comment includes a rating from 1-5 stars
+    """
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()

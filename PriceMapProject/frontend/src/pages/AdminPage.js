@@ -1,10 +1,17 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import authService from '../services/authService';
 import badWordsService from '../services/badWordsService';
+import StarDisplay from '../components/StarDisplay';
 import '../styles/pages/AdminPage.css';
-import '../styles/mobile/AdminPage.mobile.css';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -193,11 +200,6 @@ const AdminPage = () => {
       return () => clearTimeout(timer);
     }
   }, [error]);
-
-  // Helper function to format rating as stars
-  const renderStars = (rating) => {
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
-  };
 
   // Update this function to use synchronous methods
   const checkCommentsForProfanity = () => {
@@ -474,7 +476,9 @@ const AdminPage = () => {
                             </div>
                           )}
                         </td>
-                        <td className="rating-cell">{renderStars(comment.rating)}</td>
+                        <td className="rating-cell">
+                          <StarDisplay rating={comment.rating} />
+                        </td>
                         <td>{new Date(comment.created_at).toLocaleDateString()}</td>
                         <td>
                           <div className="action-buttons">
