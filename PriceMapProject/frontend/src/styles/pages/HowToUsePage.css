@@ -1,0 +1,223 @@
+/* How To Use Page Styles */
+.how-to-use-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  color: #fff;
+}
+
+.how-to-use-container {
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+header h1 {
+  font-size: 2.8rem;
+  margin-bottom: 15px;
+  background: linear-gradient(45deg, #3498db, #2ecc71);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.section {
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+.section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.section-number {
+  background-color: rgba(52, 152, 219, 0.2);
+  color: #3498db;
+  font-size: 1.2rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-weight: bold;
+}
+
+.section-content {
+  display: flex;
+  gap: 30px;
+  margin-top: 0;
+}
+
+.section-text {
+  flex: 1;
+  padding-top: 5px;
+}
+
+.section-text p {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.section-text ul,
+.section-text ol {
+  margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+.section-text li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.section-image-container {
+  flex: 1;
+  height: 250px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.section-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
+}
+
+.register-image-container {
+  height: 400px;
+  padding-top: 0;
+}
+
+.register-img {
+  max-height: 380px;
+  width: auto;
+  object-fit: contain;
+}
+
+.account-image {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../assets/images/register.png');
+}
+
+.map-image {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../assets/images/mapa.png');
+}
+
+.add-location-image {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../assets/images/addNewLocation.png');
+}
+
+.prices-image {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../assets/images/addPrice.png');
+}
+
+.comments-image {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../assets/images/comment.png');
+}
+
+.return-home {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.back-button {
+  display: inline-block;
+  background-color: #3498db;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.back-button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .how-to-use-container {
+    padding: 25px;
+  }
+  
+  header {
+    margin-bottom: 40px;
+  }
+  
+  header h1 {
+    font-size: 2.2rem;
+  }
+  
+  .section-content {
+    flex-direction: column;
+  }
+  
+  .section-image-container {
+    height: 200px;
+    margin-top: 20px;
+  }
+  
+  .register-image-container {
+    height: 350px;
+  }
+  
+  .register-img {
+    max-height: 330px;
+  }
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .section h2 {
+    font-size: 1.4rem;
+  }
+  
+  .section-number {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+  
+  .register-image-container {
+    height: 300px;
+  }
+  
+  .register-img {
+    max-height: 280px;
+  }
+} 

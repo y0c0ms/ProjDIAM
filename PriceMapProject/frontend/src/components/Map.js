@@ -5,6 +5,7 @@ import L from 'leaflet';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import authService from '../services/authService';
+import '../styles/components/Map.css';
 
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;

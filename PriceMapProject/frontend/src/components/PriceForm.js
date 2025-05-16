@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';
-import './PriceForm.css';
+import config from '../services/config';
+import '../styles/components/PriceForm.css';
 
 const PriceForm = ({ locationId, onPriceAdded }) => {
   const [formData, setFormData] = useState({
@@ -44,8 +45,8 @@ const PriceForm = ({ locationId, onPriceAdded }) => {
       }
 
       // Submit the new price
-      await axios.post(
-        `http://localhost:8000/api/locations/${locationId}/add_price/`, 
+      const response = await axios.post(
+        `${config.apiUrl}/locations/${locationId}/add_price/`, 
         formData
       );
 

@@ -30,7 +30,7 @@
   width: 90px; /* Larger size */
   height: auto;
   animation: float 2s infinite ease-in-out;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 6px rgba(69, 69, 69, 0.709));
 }
 
 @keyframes float {
@@ -38,9 +38,24 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-30px); /* More movement in Y axis */
+    transform: translateY(-40px); 
   }
   100% {
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .scroll-indicator {
+    width: 40px;
+  }
+  .scroll-indicator.left {
+    left: -35px;
+  }
+  .scroll-indicator.right {
+    right: -35px;
+  }
+  .floating-arrow {
+    width: 35px;
   }
 } 

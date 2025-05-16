@@ -1,6 +1,7 @@
 import React from 'react';
 import scrollArrow from '../assets/images/scroll.png';
-import './ScrollIndicator.css';
+import '../styles/components/ScrollIndicator.css';
+import '../styles/mobile/ScrollIndicator.mobile.css';
 
 const ScrollIndicator = ({ show }) => {
   if (!show) return null;

@@ -1,11 +1,13 @@
 .admin-page {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 0 auto 60px auto;
   padding: 20px;
   background-color: rgba(0, 0, 0, 0.7);
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
 }
 
 .admin-page h1 {
@@ -155,4 +157,84 @@
     display: block;
     overflow-x: auto;
   }
+}
+
+/* Profanity filter controls */
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.filter-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  background-color: #2980b9;
+}
+
+.filter-btn:disabled {
+  background-color: #7f8c8d;
+  cursor: not-allowed;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ecf0f1;
+  cursor: pointer;
+}
+
+.filter-toggle input {
+  cursor: pointer;
+}
+
+/* Profanity indicators */
+.profanity-row {
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.profanity-badge {
+  display: inline-block;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+  cursor: help;
+}
+
+.censor-btn {
+  background-color: #f39c12;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 5px;
+  transition: all 0.3s ease;
+}
+
+.censor-btn:hover {
+  background-color: #d35400;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 } 

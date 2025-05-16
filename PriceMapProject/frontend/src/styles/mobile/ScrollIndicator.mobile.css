@@ -1,0 +1,14 @@
+@media (max-width: 600px) {
+  .scroll-indicator {
+    width: 40px;
+  }
+  .scroll-indicator.left {
+    left: -35px;
+  }
+  .scroll-indicator.right {
+    right: -35px;
+  }
+  .floating-arrow {
+    width: 35px;
+  }
+} 

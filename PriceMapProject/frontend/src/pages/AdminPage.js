@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import authService from '../services/authService';
-import './AdminPage.css';
+import badWordsService from '../services/badWordsService';
+import '../styles/pages/AdminPage.css';
+import '../styles/mobile/AdminPage.mobile.css';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -14,6 +16,9 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isCheckingComments, setIsCheckingComments] = useState(false);
+  const [filteredComments, setFilteredComments] = useState([]);
+  const [showFilteredOnly, setShowFilteredOnly] = useState(false);
 
   // Check if user is admin
   useEffect(() => {
@@ -194,6 +199,77 @@ const AdminPage = () => {
     return '★'.repeat(rating) + '☆'.repeat(5 - rating);
   };
 
+  // Update this function to use synchronous methods
+  const checkCommentsForProfanity = () => {
+    setIsCheckingComments(true);
+    
+    try {
+      const profanityResults = comments.map(comment => {
+        try {
+          const result = badWordsService.checkProfanity(comment.text);
+          return {
+            ...comment,
+            hasProfanity: result.bad_words_total > 0,
+            profanityCount: result.bad_words_total,
+            badWords: result.bad_words_list
+          };
+        } catch (error) {
+          console.error(`Error checking comment ${comment.id}:`, error);
+          return {
+            ...comment,
+            hasProfanity: false,
+            profanityCount: 0,
+            badWords: []
+          };
+        }
+      });
+      
+      const filtered = profanityResults.filter(comment => comment.hasProfanity);
+      setFilteredComments(filtered);
+      setShowFilteredOnly(filtered.length > 0);
+      
+      if (filtered.length > 0) {
+        setSuccessMessage(`Found ${filtered.length} comments with potential profanity.`);
+      } else {
+        setSuccessMessage('No comments with profanity found.');
+      }
+    } catch (error) {
+      console.error('Error checking comments for profanity:', error);
+      setError('Failed to check comments for profanity.');
+    } finally {
+      setIsCheckingComments(false);
+    }
+  };
+  
+  // Update this function to use synchronous censor
+  const handleCensorComment = async (commentId) => {
+    try {
+      const comment = comments.find(c => c.id === commentId);
+      if (!comment) return;
+      
+      setLoading(true);
+      
+      // Get censored version - now synchronous
+      const censoredText = badWordsService.censorProfanity(comment.text);
+      
+      // Update the comment in the database
+      await axios.patch(`http://localhost:8000/api/comments/${commentId}/`, {
+        text: censoredText
+      }, getAuthHeader());
+      
+      // Show success notification
+      setSuccessMessage('Comment censored successfully.');
+      
+      // Refresh comments
+      fetchComments();
+    } catch (error) {
+      console.error('Error censoring comment:', error);
+      setError('Failed to censor comment.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="admin-page">
       <h1>Admin Dashboard</h1>
@@ -349,6 +425,29 @@ const AdminPage = () => {
             {activeTab === 'comments' && (
               <div className="comments-tab">
                 <h2>Manage Comments</h2>
+                
+                {/* Add filter controls */}
+                <div className="filter-controls">
+                  <button
+                    onClick={checkCommentsForProfanity}
+                    disabled={isCheckingComments}
+                    className="filter-btn"
+                  >
+                    {isCheckingComments ? 'Checking...' : 'Check for Profanity'}
+                  </button>
+                  
+                  {filteredComments.length > 0 && (
+                    <label className="filter-toggle">
+                      <input
+                        type="checkbox"
+                        checked={showFilteredOnly}
+                        onChange={() => setShowFilteredOnly(!showFilteredOnly)}
+                      />
+                      Show only comments with profanity ({filteredComments.length})
+                    </label>
+                  )}
+                </div>
+                
                 <table className="admin-table">
                   <thead>
                     <tr>
@@ -362,21 +461,39 @@ const AdminPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {comments.map(comment => (
-                      <tr key={comment.id}>
+                    {(showFilteredOnly ? filteredComments : comments).map(comment => (
+                      <tr key={comment.id} className={comment.hasProfanity ? 'profanity-row' : ''}>
                         <td>{comment.id}</td>
                         <td>{comment.location?.name || 'Unknown'}</td>
                         <td>{comment.user?.username || 'Unknown'}</td>
-                        <td className="comment-text-cell">{comment.text}</td>
+                        <td className="comment-text-cell">
+                          {comment.text}
+                          {comment.hasProfanity && (
+                            <div className="profanity-badge" title={`Bad words: ${comment.badWords?.join(', ')}`}>
+                              {comment.profanityCount} bad word(s)
+                            </div>
+                          )}
+                        </td>
                         <td className="rating-cell">{renderStars(comment.rating)}</td>
                         <td>{new Date(comment.created_at).toLocaleDateString()}</td>
                         <td>
-                          <button 
-                            className="delete-btn"
-                            onClick={() => handleDeleteComment(comment.id)}
-                          >
-                            Delete
-                          </button>
+                          <div className="action-buttons">
+                            <button 
+                              className="delete-btn"
+                              onClick={() => handleDeleteComment(comment.id)}
+                            >
+                              Delete
+                            </button>
+                            
+                            {comment.hasProfanity && (
+                              <button 
+                                className="censor-btn"
+                                onClick={() => handleCensorComment(comment.id)}
+                              >
+                                Censor
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

@@ -1,15 +1,17 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import LocationDetailPage from './pages/LocationDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
+import HowToUsePage from './pages/HowToUsePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import './App.css';
+import './styles/app/App.css';
 
 function App() {
   return (
@@ -30,6 +32,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/how-to-use" element={<HowToUsePage />} />
             <Route path="/locations/:id" element={
               <ProtectedRoute>
                 <LocationDetailPage />
@@ -47,6 +50,7 @@ function App() {
             } />
           </Routes>
         </div>
+        <Footer />
       </div>
     </Router>
   );

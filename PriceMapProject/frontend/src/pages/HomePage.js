@@ -3,7 +3,8 @@ import Map from '../components/Map';
 import ScrollIndicator from '../components/ScrollIndicator';
 import authService from '../services/authService';
 import axios from 'axios';
-import './HomePage.css';
+import '../styles/pages/HomePage.css';
+import '../styles/mobile/HomePage.mobile.css';
 
 const HomePage = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -167,8 +168,8 @@ const HomePage = () => {
     }
   };
 
-  // Memoize locations to prevent unnecessary re-renders
-  const displayLocations = showAddForm ? [] : locations;
+  // Always display all locations even in add location mode
+  const displayLocations = locations;
 
   // Determine if scroll arrows should be shown
   const shouldShowScrollArrows = showAddForm && selectedPosition;
@@ -186,19 +187,40 @@ const HomePage = () => {
         <ScrollIndicator show={shouldShowScrollArrows} />
       </div>
 
-      {isLoggedIn && (
-        <div className="action-section">
+      {/* Always include the action section in DOM for consistent layout, just hide it when needed */}
+      <div className={`action-section ${!isLoggedIn ? 'hidden' : ''}`}>
+        {showAddForm ? (
+          <>
+            <button 
+              className="toggle-form-btn active"
+              onClick={toggleAddLocationMode}
+            >
+              Go back to full map
+            </button>
+            {formStatus.success && (
+              <button
+                className="toggle-form-btn"
+                onClick={() => {
+                  setFormStatus({ error: '', success: '', isSubmitting: false });
+                  setShowAddForm(true);
+                }}
+              >
+                Add New Location
+              </button>
+            )}
+          </>
+        ) : (
           <button 
-            className={`toggle-form-btn ${showAddForm ? 'active' : ''}`}
+            className="toggle-form-btn"
             onClick={toggleAddLocationMode}
           >
-            {showAddForm ? 'Cancel' : 'Add New Location'}
+            Add New Location
           </button>
+        )}
         </div>
-      )}
 
-      {showAddForm && (
-        <div className="location-form">
+      {/* Always include the form in DOM for consistent layout, just hide it when needed */}
+      <div className={`location-form ${!showAddForm ? 'hidden' : ''}`}>
           <h3>Add New Location</h3>
           {formStatus.error && <div className="error-message">{formStatus.error}</div>}
           {formStatus.success && <div className="success-message">{formStatus.success}</div>}
@@ -249,13 +271,11 @@ const HomePage = () => {
             </button>
           </form>
         </div>
-      )}
 
-      {!isLoggedIn && (
-        <div className="login-prompt">
+      {/* Always include the login prompt in DOM for consistent layout, just hide it when needed */}
+      <div className={`login-prompt ${isLoggedIn ? 'hidden' : ''}`}>
           <p>Please login to add new locations or prices</p>
         </div>
-      )}
     </div>
   );
 };

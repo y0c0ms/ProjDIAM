@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';
+import config from '../services/config';
 import Map from './Map';
-import './LocationForm.css';
+import '../styles/components/LocationForm.css';
 
 const LocationForm = ({ onLocationAdded }) => {
   const [formData, setFormData] = useState({
@@ -36,19 +37,13 @@ const LocationForm = ({ onLocationAdded }) => {
     // Get address from coordinates
     try {
       setIsLoadingAddress(true);
-      const response = await axios.post(
-        'http://localhost:8000/api/locations/get_address/',
-        { latitude: lat, longitude: lng }
-      );
-      
-      if (response.data && response.data.address) {
-        setFormData(prev => ({
-          ...prev,
-          latitude: lat,
-          longitude: lng,
-          address: response.data.address
-        }));
-      }
+      const address = await getAddressFromCoordinates(lat, lng);
+      setFormData(prev => ({
+        ...prev,
+        latitude: lat,
+        longitude: lng,
+        address: address
+      }));
     } catch (err) {
       console.error('Error getting address:', err);
     } finally {
@@ -71,23 +66,9 @@ const LocationForm = ({ onLocationAdded }) => {
         return;
       }
 
-      // Create a copy of form data to send
-      const dataToSend = { ...formData };
-      
-      // Get token from local storage
-      const token = localStorage.getItem('token');
-      
-      const config = {
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        }
-      };
-
       const response = await axios.post(
-        'http://localhost:8000/api/locations/', 
-        dataToSend,
-        config
+        `${config.apiUrl}/locations/`,
+        formData
       );
 
       setSuccess('Location added successfully!');
@@ -198,6 +179,19 @@ const LocationForm = ({ onLocationAdded }) => {
       </div>
     </div>
   );
+};
+
+const getAddressFromCoordinates = async (lat, lng) => {
+  try {
+    const response = await axios.post(
+      `${config.apiUrl}/locations/get_address/`, 
+      { latitude: lat, longitude: lng }
+    );
+    return response.data.address;
+  } catch (error) {
+    console.error('Error getting address:', error);
+    return '';
+  }
 };
 
 export default LocationForm; 

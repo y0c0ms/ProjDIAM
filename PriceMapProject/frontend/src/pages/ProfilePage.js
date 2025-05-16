@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';
-import './ProfilePage.css';
+import '../styles/pages/ProfilePage.css';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);

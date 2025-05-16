@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
-import './Navbar.css';
+import '../styles/components/Navbar.css';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -24,8 +24,7 @@ const Navbar = () => {
         </div>
         
         <div className="navbar-menu">
-          <Link to="/" className="navbar-item">Home</Link>
-          
+          {/* Removed Home button */}
           {isLoggedIn ? (
             <>
               {isAdmin && (
@@ -33,12 +32,10 @@ const Navbar = () => {
                   <i className="fas fa-cog"></i> Admin
                 </Link>
               )}
-              <Link to="/profile" className="navbar-item">
-                <i className="fas fa-user-circle"></i> Profile
-              </Link>
-              <span className="navbar-item user-greeting">
+              {/* Removed Profile button, made username clickable and link to profile */}
+              <Link to="/profile" className="navbar-item user-greeting">
                 <i className="fas fa-user"></i> {user?.username || 'User'}
-              </span>
+              </Link>
               <button onClick={handleLogout} className="logout-btn">
                 <i className="fas fa-sign-out-alt"></i> Logout
               </button>

@@ -4,7 +4,7 @@ import axios from 'axios';
 import PriceForm from '../components/PriceForm';
 import CommentForm from '../components/CommentForm';
 import authService from '../services/authService';
-import './LocationDetailPage.css';
+import '../styles/pages/LocationDetailPage.css';
 
 // Component to display star ratings
 const StarDisplay = ({ rating }) => {
