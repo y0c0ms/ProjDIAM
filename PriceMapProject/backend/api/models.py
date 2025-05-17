@@ -44,14 +44,41 @@ class PriceInfo(models.Model):
     Each entry represents a product's price at a particular location
     Prices can be validated by users to confirm accuracy
     """
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='prices')
+    location = models.ForeignKey(
+        Location, 
+        on_delete=models.CASCADE, 
+        related_name='prices', 
+        null=False,
+        db_column='location_id'  # Explicitly specify db column name
+    )
     product_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     date_reported = models.DateTimeField(auto_now_add=True)
     reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_prices')
     
+    class Meta:
+        # Add verbose names for admin
+        verbose_name = "Price Information"
+        verbose_name_plural = "Price Information"
+    
     def __str__(self):
-        return f"{self.product_name} - {self.price} at {self.location.name}"
+        return f"{self.product_name} - {self.price} at {self.location.name if self.location else 'Unknown'}"
+        
+    def save(self, *args, **kwargs):
+        # Ensure location is set - fallback to first location if missing
+        if not self.location_id and Location.objects.exists():
+            self.location = Location.objects.first()
+            
+        # Print debug info
+        print(f"Saving PriceInfo: {self.product_name}, {self.price}, Location ID: {self.location_id}")
+        super().save(*args, **kwargs)
+        
+        # Verify save worked
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT location_id FROM api_priceinfo WHERE id = %s", [self.id])
+            loc_id = cursor.fetchone()[0]
+            print(f"After save - Verified location_id in DB: {loc_id}")
 
 class PriceValidation(models.Model):
     """

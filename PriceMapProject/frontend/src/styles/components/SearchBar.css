@@ -1,0 +1,186 @@
+/**
+ * Code made by:
+ * - Manuel Santos nº 111087
+ * - Alexandre Mendes nº 111026
+ * - Vlad Ganta nº 110672
+ */
+
+/**
+ * Search Bar Component Styles
+ * Completely transparent search input with only a white line below
+ */
+
+/* Container that holds the search form */
+.search-bar-container {
+  position: relative;
+  width: 400px;
+  margin: 0 20px;
+  z-index: 5;
+  background: transparent !important;
+}
+
+/* Main form container */
+.search-form {
+  display: flex;
+  align-items: center;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow: visible;
+  transition: all 0.3s ease;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7) !important;
+  padding: 6px 0;
+}
+
+/* Form hover and focus states */
+.search-form:hover, .search-form:focus-within {
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 1) !important;
+  box-shadow: none !important;
+}
+
+/* The actual search input */
+.search-input {
+  flex: 1;
+  background-color: transparent !important;
+  background: none !important;
+  background-image: none !important;
+  border: none !important;
+  color: #ffffff !important;
+  padding: 8px 0 !important;
+  font-size: 14px;
+  outline: none !important;
+  width: 100%;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* Placeholder text styling */
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Search button (magnifying glass) */
+.search-button {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+}
+
+.search-button:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+/* Increase icon size */
+.search-button i {
+  font-size: 16px;
+}
+
+/* Suggestions dropdown styling */
+.suggestions-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 5px;
+  background-color: rgba(20, 20, 20, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.suggestions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 12px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.suggestion-product {
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.suggestion-price {
+  color: #2ecc71;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.suggestion-location {
+  font-size: 0.8rem;
+  color: #bdc3c7;
+  margin-top: 2px;
+}
+
+.suggestion-loading, .no-suggestions {
+  padding: 15px;
+  text-align: center;
+  color: #ecf0f1;
+  font-size: 0.9rem;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .search-bar-container {
+    width: 220px;
+    margin: 0 10px;
+  }
+  
+  .search-input {
+    font-size: 13px;
+    padding: 6px 0 !important;
+  }
+  
+  .search-button {
+    padding: 0 6px;
+  }
+}
+
+@media (max-width: 640px) {
+  .search-bar-container {
+    width: 100%;
+    margin: 10px 0;
+  }
+} 

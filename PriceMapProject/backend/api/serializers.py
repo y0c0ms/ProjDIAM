@@ -50,12 +50,15 @@ class PriceInfoSerializer(serializers.ModelSerializer):
     current_user_validation = serializers.SerializerMethodField()
     last_validation_inaccurate = serializers.SerializerMethodField()
     price_status = serializers.SerializerMethodField()
+    location_name = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = PriceInfo
         fields = ['id', 'product_name', 'price', 'date_reported', 'reported_by', 
                  'accurate_count', 'inaccurate_count', 'last_validation_date', 
-                 'current_user_validation', 'last_validation_inaccurate', 'price_status']
+                 'current_user_validation', 'last_validation_inaccurate', 'price_status',
+                 'location', 'location_name']
+        read_only_fields = ['reported_by', 'date_reported', 'location_name']
     
     def get_accurate_count(self, obj):
         """Returns the count of accurate validations for this price"""
@@ -81,6 +84,10 @@ class PriceInfoSerializer(serializers.ModelSerializer):
             if validation:
                 return validation.validation_type
         return None
+    
+    def get_location_name(self, obj):
+        """Returns the name of the location this price belongs to"""
+        return obj.location.name if obj.location else None
         
     def get_last_validation_inaccurate(self, obj):
         """Returns True if the most recent validation was inaccurate"""
@@ -132,10 +139,18 @@ class LocationSerializer(serializers.ModelSerializer):
     Includes full price history and all comments for the location
     """
     created_by = UserSerializer(read_only=True)
-    prices = PriceInfoSerializer(many=True, read_only=True)
+    prices = serializers.SerializerMethodField(read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
     
     class Meta:
         model = Location
         fields = ['id', 'name', 'latitude', 'longitude', 'address', 
-                  'created_at', 'updated_at', 'created_by', 'prices', 'comments'] 
+                  'created_at', 'updated_at', 'created_by', 'prices', 'comments']
+    
+    def get_prices(self, obj):
+        """
+        Get only prices that belong to this location
+        Ensures prices are properly filtered by location
+        """
+        prices = obj.prices.all()
+        return PriceInfoSerializer(prices, many=True, context=self.context).data 

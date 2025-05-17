@@ -37,3 +37,16 @@ code {
 a, button, input, select, textarea {
   transition: all 0.2s ease;
 }
+
+/* Global search input styling */
+input[type="search"],
+input.search-input,
+.search-input {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}

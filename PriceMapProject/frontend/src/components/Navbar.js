@@ -8,6 +8,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
+import SearchBar from './SearchBar';
 import '../styles/components/Navbar.css';
 
 /**
@@ -17,6 +18,7 @@ import '../styles/components/Navbar.css';
  * - Shows admin link for admin users
  * - Username links to profile page
  * - Handles logout functionality
+ * - Includes search bar for product search
  * 
  * @returns {JSX.Element} The navigation bar component
  */
@@ -45,7 +47,9 @@ const Navbar = () => {
         </div>
         
         <div className="navbar-menu">
-          {/* Removed Home button */}
+          {/* Search bar component */}
+          {isLoggedIn && <SearchBar />}
+          
           {isLoggedIn ? (
             <>
               {isAdmin && (

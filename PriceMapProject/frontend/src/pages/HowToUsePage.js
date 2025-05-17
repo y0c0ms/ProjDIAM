@@ -13,6 +13,7 @@ import addLocationImage from '../assets/images/addNewLocation.png';
 import addPriceImage from '../assets/images/addPrice.png';
 import commentImage from '../assets/images/comment.png';
 import registerImage from '../assets/images/register.png';
+import searchBarImage from '../assets/images/searchBar.png';
 
 const HowToUsePage = () => {
   return (
@@ -124,6 +125,28 @@ const HowToUsePage = () => {
             </div>
             <div className="section-image-container">
               <img src={commentImage} alt="Adding comments" className="section-img" />
+            </div>
+          </div>
+        </section>
+
+        <section className="section">
+          <h2>
+            <span className="section-number">06</span>
+            Search for Products
+          </h2>
+          <div className="section-content">
+            <div className="section-text">
+              <p>Quickly find products across all locations:</p>
+              <ol>
+                <li>Use the search bar in the navigation menu</li>
+                <li>Type the name of the product you're looking for</li>
+                <li>Select a product from the dropdown suggestions</li>
+                <li>You'll be taken directly to the location with the cheapest price for that product</li>
+              </ol>
+              <p>The search feature helps you find the best prices without browsing through all locations!</p>
+            </div>
+            <div className="section-image-container">
+              <img src={searchBarImage} alt="Using the search bar" className="section-img" />
             </div>
           </div>
         </section>

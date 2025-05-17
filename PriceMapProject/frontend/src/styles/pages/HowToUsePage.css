@@ -149,6 +149,10 @@ header h1 {
   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../assets/images/comment.png');
 }
 
+.search-image {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../assets/images/searchBar.png');
+}
+
 .return-home {
   text-align: center;
   margin-top: 40px;

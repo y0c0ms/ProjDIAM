@@ -406,7 +406,7 @@ const AdminPage = () => {
                         <td>{price.id}</td>
                         <td>{price.product_name}</td>
                         <td>€{price.price}</td>
-                        <td>{price.location?.name || 'Unknown'}</td>
+                        <td>{price.location_name}</td>
                         <td>{price.reported_by?.username || 'Unknown'}</td>
                         <td>{new Date(price.date_reported).toLocaleDateString()}</td>
                         <td>

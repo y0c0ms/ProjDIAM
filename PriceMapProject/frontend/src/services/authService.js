@@ -56,13 +56,17 @@ const removeToken = () => {
   localStorage.removeItem('token');
 };
 
-// Get CSRF Token first
+// Fetch CSRF token
 const fetchCsrfToken = async () => {
   try {
-    await axios.get(`${BASE_API_URL}/csrf/`);
-    console.log('CSRF token fetched successfully');
+    const response = await axios.get('http://127.0.0.1:8000/api/csrf/', { withCredentials: true });
+    const csrfToken = response.data.csrftoken;
+    if (csrfToken) {
+      document.cookie = `csrftoken=${csrfToken}`;
+    }
   } catch (error) {
     console.error('Error fetching CSRF token:', error);
+    // Don't throw error - continue anyway
   }
 };
 
@@ -175,6 +179,11 @@ const getCurrentUser = () => {
   return JSON.parse(localStorage.getItem('user'));
 };
 
+// Get token from localStorage
+const getToken = () => {
+  return localStorage.getItem('token');
+};
+
 // Check if user is logged in
 const isLoggedIn = () => {
   const token = localStorage.getItem('token');
@@ -244,7 +253,8 @@ const authService = {
   isLoggedIn,
   isAdmin,
   fetchCsrfToken,
-  testLocalStorage
+  testLocalStorage,
+  getToken
 };
 
 export default authService; 

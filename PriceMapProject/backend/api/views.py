@@ -145,7 +145,12 @@ class LocationViewSet(viewsets.ModelViewSet):
         per the price update policy (newer prices replace older ones)
         """
         location = self.get_object()
-        serializer = PriceInfoSerializer(data=request.data)
+        
+        # Add location to request data
+        request_data = request.data.copy()
+        request_data['location'] = location.id
+        
+        serializer = PriceInfoSerializer(data=request_data)
         
         if serializer.is_valid():
             product_name = serializer.validated_data['product_name']
@@ -160,13 +165,21 @@ class LocationViewSet(viewsets.ModelViewSet):
                 print(f"Replacing {old_prices.count()} existing price(s) for '{product_name}' at {location.name}")
                 old_prices.delete()
             
-            # Save the new price
+            # Save the new price - explicitly pass the location object
             new_price = serializer.save(location=location, reported_by=request.user)
             print(f"Added new price for '{product_name}': €{new_price.price} at {location.name}")
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Improved error response with more details
+        print(f"Price validation error: {serializer.errors}")
+        return Response(
+            {
+                'message': 'Failed to add price',
+                'errors': serializer.errors
+            }, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
     
     @action(detail=True, methods=['post'])
     def add_comment(self, request, pk=None):
@@ -211,8 +224,61 @@ class PriceInfoViewSet(viewsets.ModelViewSet):
         context.update({'request': self.request})
         return context
     
+    def get_queryset(self):
+        """
+        Filter prices by location if specified in query parameters
+        """
+        queryset = PriceInfo.objects.all()
+        
+        # Get location filter from query parameters
+        location_id = self.request.query_params.get('location', None)
+        if location_id is not None:
+            queryset = queryset.filter(location_id=location_id)
+            
+        return queryset
+    
     def perform_create(self, serializer):
         serializer.save(reported_by=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        """
+        Search for products by name
+        
+        Only returns products whose prices are not marked as outdated
+        Used for search suggestions in the navbar search component
+        Results are ordered by price (lowest first)
+        
+        Query parameters:
+        - q: Search query string
+        - limit: Maximum number of results to return (default 10)
+        """
+        query = request.query_params.get('q', '')
+        limit = int(request.query_params.get('limit', 10))
+        
+        if not query:
+            return Response([])
+        
+        # Find all price info that match the query
+        prices = PriceInfo.objects.filter(product_name__icontains=query).order_by('price')
+        
+        # Filter out outdated prices
+        # A price is outdated when it has more inaccurate than accurate validations
+        valid_prices = []
+        for price in prices:
+            accurate_count = price.validations.filter(validation_type=PriceValidation.ACCURATE).count()
+            inaccurate_count = price.validations.filter(validation_type=PriceValidation.INACCURATE).count()
+            
+            # Only include current or unvalidated prices (not outdated)
+            if inaccurate_count <= accurate_count:
+                valid_prices.append(price)
+        
+        # Limit the number of results
+        valid_prices = valid_prices[:limit]
+        
+        # Serialize the results with location details
+        serializer = self.get_serializer(valid_prices, many=True)
+        return Response(serializer.data)
     
     @action(detail=True, methods=['post'])
     def validate(self, request, pk=None):

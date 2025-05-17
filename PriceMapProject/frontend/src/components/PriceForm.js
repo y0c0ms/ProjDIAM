@@ -69,10 +69,23 @@ const PriceForm = ({ locationId, onPriceAdded }) => {
         return;
       }
 
+      // Ensure price is a number
+      const priceData = {
+        ...formData,
+        price: parseFloat(formData.price),
+        location: locationId
+      };
+
       // Submit the new price
       const response = await axios.post(
         `${config.apiUrl}/locations/${locationId}/add_price/`, 
-        formData
+        priceData,
+        {
+          headers: {
+            'Authorization': `Token ${authService.getToken()}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
       // Reset form and show success message
@@ -93,8 +106,29 @@ const PriceForm = ({ locationId, onPriceAdded }) => {
       }
     } catch (err) {
       console.error('Error adding price:', err);
+      
+      // Extract error message from response if available
+      let errorMessage = 'Failed to add price';
+      if (err.response && err.response.data) {
+        if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+        
+        // Handle field-specific errors
+        if (err.response.data.errors) {
+          const errors = err.response.data.errors;
+          const fieldErrors = Object.keys(errors)
+            .map(field => `${field}: ${errors[field].join(', ')}`)
+            .join('; ');
+            
+          if (fieldErrors) {
+            errorMessage += ` - ${fieldErrors}`;
+          }
+        }
+      }
+      
       setStatus({
-        error: err.response?.data?.message || 'Failed to add price',
+        error: errorMessage,
         success: '',
         isSubmitting: false
       });
