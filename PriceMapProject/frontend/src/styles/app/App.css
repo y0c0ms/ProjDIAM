@@ -439,6 +439,32 @@ textarea::placeholder {
   white-space: pre-wrap;
 }
 
+.preview-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.submit-btn.primary {
+  background-color: rgba(52, 152, 219, 0.8);
+  color: white;
+  flex: 1;
+}
+
+.submit-btn.primary:hover {
+  background-color: rgba(41, 128, 185, 0.9);
+}
+
+.cancel-btn.secondary {
+  background-color: rgb(180, 140, 10);
+  color: white;
+  flex: 1;
+}
+
+.cancel-btn.secondary:hover {
+  background-color: rgb(150, 120, 0);
+}
+
 .censored-options {
   display: flex;
   gap: 10px;

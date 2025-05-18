@@ -118,14 +118,15 @@ class CommentSerializer(serializers.ModelSerializer):
     Includes simplified location data
     """
     user = UserSerializer(read_only=True)
-    location = serializers.SerializerMethodField()
+    location_details = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = Comment
-        fields = ['id', 'text', 'rating', 'created_at', 'user', 'location']
+        fields = ['id', 'text', 'rating', 'created_at', 'user', 'location', 'location_details']
+        read_only_fields = ['user', 'created_at', 'location_details']
         
-    def get_location(self, obj):
-        """Returns simplified location data for the comment"""
+    def get_location_details(self, obj):
+        """Returns simplified location data for the comment (for read only)"""
         if obj.location:
             return {
                 'id': obj.location.id,

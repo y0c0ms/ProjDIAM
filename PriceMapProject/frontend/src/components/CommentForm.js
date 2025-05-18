@@ -5,7 +5,7 @@
  * - Vlad Ganta nº 110672
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';
 import badWordsService from '../services/badWordsService';
@@ -32,6 +32,11 @@ const CommentForm = ({ locationId, onCommentAdded }) => {
     error: '',
     success: ''
   });
+
+  // Debug: log locationId when component mounts or locationId changes
+  useEffect(() => {
+    console.log('CommentForm mounted with locationId:', locationId);
+  }, [locationId]);
 
   /**
    * Update a single form state property
@@ -102,6 +107,13 @@ const CommentForm = ({ locationId, onCommentAdded }) => {
       return;
     }
 
+    // Validate locationId
+    if (!locationId) {
+      updateFormState('error', 'Location ID is missing. Cannot post comment.');
+      console.error('Location ID is missing in CommentForm');
+      return;
+    }
+
     updateFormState('isProcessing', true);
 
     try {
@@ -145,10 +157,16 @@ const CommentForm = ({ locationId, onCommentAdded }) => {
       // Get token from localStorage directly
       const token = localStorage.getItem('token');
       
+      console.log('Submitting comment with data:', {
+        location: parseInt(locationId), // Ensure locationId is an integer
+        text: commentText,
+        rating
+      });
+      
       await axios.post(
         `${config.apiUrl}/comments/`, 
         {
-          location: locationId,
+          location: parseInt(locationId), // Ensure locationId is an integer
           text: commentText,
           rating
         },

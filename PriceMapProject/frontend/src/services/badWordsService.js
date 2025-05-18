@@ -7,9 +7,19 @@
 
 // A simple list of bad words to check against
 const BAD_WORDS = [
+  // Inglês
   'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'dick', 'pussy', 'cock', 
   'whore', 'slut', 'bastard', 'motherfucker', 'piss', 'damn', 'ass',
-  // Add more words as needed
+
+  // Português (Portugal e Brasil)
+  'merda', 'caralho', 'porra', 'puta', 'puto', 'foda', 'fodido', 'foder', 'cu', 'cabrao', 'cabrão',
+  'paneleiro','bicha', 'otário', 'otaria', 'arrombado', 'corno', 'corna',
+  'burro', 'burra', 'estúpido', 'estupida', 'palhaço', 'palhaca', 'desgraçado', 'desgraçada', 'fdp',
+  'safado', 'safada', 'vagabundo', 'vagabunda', 'canalha', 'escroto', 'escrota', 'imbecil', 'idiota',
+  'maluco', 'maluca', 'nojento', 'nojenta', 'porcaria', 'retardado', 'retardada', 'tarado', 'tarada',
+  'pila', 'piça', 'pinto', 'punheteiro', 'punheteira',
+  'chupa', 'chupeta', 'chupador', 'chupadora', 'mamador', 'mamadora', 'corno', 'corna', 'cornudo', 'cornuda',
+  'puta que pariu', 'vai tomar no cu', 'vai se foder', 'vai-te foder', 'vai-te lixar', 'crl','vai-te catar'
 ];
 
 /**
